@@ -10,7 +10,7 @@ const db = await mysql.createConnection({
 // Удаляем базу данных
 try {
     await db.query('DROP DATABASE IF EXISTS school');
-    console.log('База данных "school" успешно удалена');
+    console.log('Deleted db school');
 } catch (err) {
     console.error('Ошибка при удалении базы данных:', err);
 } finally {

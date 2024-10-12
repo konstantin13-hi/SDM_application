@@ -15,9 +15,9 @@ const db = await mysql.createConnection({
 
 try {
     await db.query(sql);
-    console.log('База данных и таблицы успешно созданы');
+    console.log('DB connected successfully');
 } catch (err) {
-    console.error('Ошибка выполнения скрипта:', err);
+    console.error('Error:', err);
 } finally {
     db.end();
 }
