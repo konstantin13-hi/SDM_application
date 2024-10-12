@@ -19,23 +19,7 @@ app.get('/', (req, res) => {
     res.send('Hello, this is your API!');
 });
 
-app.post('/add-user', (req, res) => {
-    const { name, email } = req.body; // Извлекаем данные из тела запроса
 
-    if (!name || !email) {
-        return res.status(400).json({ message: 'Name and email are required' });
-    }
-
-    // Пример SQL-запроса для вставки данных в базу данных
-    const query = 'INSERT INTO teachers (name, email) VALUES (?, ?)';
-    db.query(query, [name, email], (err, results) => {
-        if (err) {
-            console.error('Ошибка добавления данных:', err);
-            return res.status(500).json({ message: 'Ошибка сервера' });
-        }
-        res.json({ message: 'Пользователь успешно добавлен!' });
-    });
-});
 
 
 app.listen(port, () => {
@@ -61,16 +45,12 @@ db.connect((err) => {
     console.log('Подключено к базе данных MySQL');
 });
 
+import teacherRoutes from './routes/teacherRoutes.js';
 
-app.post('/add-user', async (req, res) => {
-    const { name, email } = req.body; // Извлекаем данные из тела запроса
+app.use(teacherRoutes(db));
 
-    try {
-        // Вставляем данные в таблицу студентов
-        await db.query('INSERT INTO students (name, email) VALUES (?, ?)', [name, email]);
-        res.send('User added successfully!');
-    } catch (err) {
-        console.error('Ошибка при добавлении пользователя:', err);
-        res.status(500).send('Error adding user.');
-    }
-});
+
+
+
+
+
