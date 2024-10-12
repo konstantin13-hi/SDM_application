@@ -2,10 +2,6 @@
 import express from 'express';
 
 import cors from 'cors';
-
-
-
-
 const app = express();
 const port = 3000;
 
@@ -18,9 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
     res.send('Hello, this is your API!');
 });
-
-
-
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
@@ -39,15 +32,17 @@ const db = mysql.createConnection({
 // Проверка подключения
 db.connect((err) => {
     if (err) {
-        console.error('Ошибка подключения к базе данных:', err);
+        console.error('Error :', err);
         return;
     }
-    console.log('Подключено к базе данных MySQL');
+    console.log('db connected');
 });
 
 import teacherRoutes from './routes/teacherRoutes.js';
 
+
 app.use(teacherRoutes(db));
+
 
 
 
