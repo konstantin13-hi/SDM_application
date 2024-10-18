@@ -49,3 +49,14 @@ CREATE TABLE IF NOT EXISTS grades (
     FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (student_id) REFERENCES students(id)
 );
+
+-- NOWE
+CREATE TABLE IF NOT EXISTS course_students (
+    course_id INT,
+    student_id INT,
+    PRIMARY KEY (course_id, student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(id),
+    FOREIGN KEY (student_id) REFERENCES students(id)
+);
+
+
