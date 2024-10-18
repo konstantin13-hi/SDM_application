@@ -58,3 +58,4 @@ CREATE TABLE IF NOT EXISTS course_students (
     FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (student_id) REFERENCES students(id)
 );
+
