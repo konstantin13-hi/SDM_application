@@ -59,3 +59,4 @@ CREATE TABLE IF NOT EXISTS course_students (
     FOREIGN KEY (student_id) REFERENCES students(id)
 );
 
+
