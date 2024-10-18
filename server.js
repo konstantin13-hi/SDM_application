@@ -1,13 +1,17 @@
-// server.js
-import express from 'express';
 
+import express from 'express';
 import cors from 'cors';
+import mysql from 'mysql2';
+import teacherRoutes from './routes/teacherRoutes.js';
+import addCourseRoutes from './routes/addCourseRoutes.js';
+
 const app = express();
 const port = 3000;
 
 app.use(cors({
     origin: 'http://localhost:5173'
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -19,17 +23,13 @@ app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
 
-import mysql from 'mysql2';
-
-// Подключение к локальной базе данных
 const db = mysql.createConnection({
     host: 'localhost',
-    user: 'root',        // Имя пользователя MySQL
-    password: 'MyPa$$word1',   // Пароль MySQL
+    user: 'root',        
+    password: 'MyPa$$word1',  
     database: 'school'
 });
 
-// Проверка подключения
 db.connect((err) => {
     if (err) {
         console.error('Error :', err);
@@ -38,14 +38,7 @@ db.connect((err) => {
     console.log('db connected');
 });
 
-import teacherRoutes from './routes/teacherRoutes.js';
-
-
 app.use(teacherRoutes(db));
-
-
-
-
-
+app.use(addCourseRoutes(db));
 
 
