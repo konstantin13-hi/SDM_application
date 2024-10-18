@@ -15,6 +15,7 @@ export default function(db) {
         }
 
 
+
         const query = 'INSERT INTO teachers (name, email) VALUES (?, ?)';
         db.query(query, [name, email], (err, results) => {
             if (err) {
@@ -24,10 +25,6 @@ export default function(db) {
             res.json({ message: 'Teacher successfully added!' });
         });
     });
-
-
-
-
 
     return router;
 }

@@ -1,0 +1,29 @@
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  h1 {
+    text-align: center;
+  }
+  
+  .course-card {
+    margin-bottom: 20px;
+  }
+  
+  .course-card .card {
+    height: 100%;
+  }
+  
+  .course-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .course-teacher {
+    color: #555;
+  }
+  
+  .course-date {
+    font-style: italic;
+    color: #777;
+  }
