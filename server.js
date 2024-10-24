@@ -2,25 +2,23 @@
 import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2';
-import path from 'path';
-import { fileURLToPath } from 'url';  // Nowy import
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
 
 import coursesRoutes from './routes/coursesRoutes.js';
 import teacherRoutes from './routes/teacherRoutes.js';
 import addCourseRoutes from './routes/addCourseRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import authMiddleware from './middleware/authMiddleware.js';
+import homePageRoute from "./routes/homePageRoute.js";
+import cookieParser from "cookie-parser";
+import addStudentRoutes from "./routes/addStudentRoutes.js";
+
 
 
 const app = express();
 const port = 3000;
-
-
-// Tworzymy odpowiedniki __dirname i __filename
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Ustawienie CORS
-// app.use(cors());
-
 
 
 
@@ -28,6 +26,7 @@ app.use(cors({
     origin: 'http://localhost:5173'
 }));
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -54,17 +53,15 @@ db.connect((err) => {
     console.log('db connected');
 });
 
-// Serwowanie plików statycznych z katalogu "public"
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Obsługa pliku courses.html spoza katalogu public
-app.get('/courses', (req, res) => {
-    // Zakładamy, że courses.html znajduje się w katalogu głównym projektu
-    res.sendFile(path.join(__dirname, 'courses.html'));  // tutaj wskazujemy na katalog główny
-});
 
+app.use(userRoutes(db));
 app.use(teacherRoutes(db));
 app.use(addCourseRoutes(db));
+app.use(coursesRoutes(db));
+app.use(homePageRoute(db));
+app.use(addStudentRoutes(db));
+
 
 
 
