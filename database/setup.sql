@@ -8,7 +8,8 @@ USE school;
 CREATE TABLE IF NOT EXISTS teachers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE -- Добавляем уникальный email для учителей
+    email VARCHAR(255) NOT NULL UNIQUE, -- Уникальный email для учителей
+    password VARCHAR(255) NOT NULL -- Поле для хранения пароля
 );
 
 -- Создаем таблицу курсов
@@ -17,13 +18,16 @@ CREATE TABLE IF NOT EXISTS courses (
     name VARCHAR(255) NOT NULL,
     teacher_id INT NOT NULL,
     start_date DATE NOT NULL,
-    FOREIGN KEY (teacher_id) REFERENCES teachers(id) -- Обновляем внешний ключ для связи с таблицей учителей
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id) -- Внешний ключ на учителей
 );
 
--- Создаем таблицу студентов
+-- Создаем таблицу студентов с добавлением внешнего ключа на учителей
 CREATE TABLE IF NOT EXISTS students (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    surname VARCHAR(255) NOT NULL,
+    teacher_id INT NOT NULL, -- Связь с таблицей учителей
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id)
 );
 
 -- Создаем таблицу посещаемости
@@ -50,12 +54,11 @@ CREATE TABLE IF NOT EXISTS grades (
     FOREIGN KEY (student_id) REFERENCES students(id)
 );
 
--- NOWE
+-- Создаем таблицу связи курсов и студентов
 CREATE TABLE IF NOT EXISTS course_students (
     course_id INT,
     student_id INT,
     PRIMARY KEY (course_id, student_id),
-    FOREIGN KEY (course_id) REFERENCES courses(id),
-    FOREIGN KEY (student_id) REFERENCES students(id)
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
-

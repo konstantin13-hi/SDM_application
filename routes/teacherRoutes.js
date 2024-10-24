@@ -15,6 +15,7 @@ export default function(db) {
         }
 
 
+
         const query = 'INSERT INTO teachers (name, email) VALUES (?, ?)';
         db.query(query, [name, email], (err, results) => {
             if (err) {
@@ -25,9 +26,12 @@ export default function(db) {
         });
     });
 
-
-
-
+    router.get('/teachers', (req, res) => {
+        db.query('SELECT id, name FROM teachers', (err, results) => {
+            if (err) return res.status(500).json({ message: 'Error fetching teachers' });
+            res.json(results);
+        });
+    });
 
     return router;
 }

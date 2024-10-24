@@ -2,15 +2,28 @@
 import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+
+
 import teacherRoutes from './routes/teacherRoutes.js';
-import addCourseRoutes from './routes/addCourseRoutes.js';
+import userRoutes from './routes/pagesRoutes/userRoutes.js';
+import homePageRoute from "./routes/pagesRoutes/homePageRoute.js";
+import addStudentRoutes from "./routes/studentsRoute.js";
+import coursesRoute from "./routes/coursesRoute.js";
+
+
 
 const app = express();
 const port = 3000;
 
+
+
 app.use(cors({
     origin: 'http://localhost:5173'
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,7 +51,14 @@ db.connect((err) => {
     console.log('db connected');
 });
 
+
+
+app.use(userRoutes(db));
 app.use(teacherRoutes(db));
-app.use(addCourseRoutes(db));
+app.use(coursesRoute(db));
+app.use(homePageRoute(db));
+app.use(addStudentRoutes(db));
+
+
 
 
