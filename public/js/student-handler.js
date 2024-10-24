@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const studentName = document.getElementById('studentName').value;
         const studentSurname = document.getElementById('studentSurname').value;
 
-        fetch(`http://localhost:3000/add-student`, { // Обновленный URL
+        fetch(`http://localhost:3000/add-student`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -26,13 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 document.getElementById('response-message').textContent = data.message;
-                // Можно обновить список студентов для удаления после добавления
+
+
+                updateStudentList();
             })
             .catch(error => {
                 console.error('Error adding student:', error);
             });
     });
-
 
     // Загрузка студентов
     fetch('http://localhost:3000/my-students', {
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const studentId = document.getElementById('studentSelect').value; // Получаем ID выбранного студента
 
         // Отправляем запрос на удаление студента
-        fetch(`http://localhost:3000/delete-student/${studentId}`, {
+        fetch(`http://localhost:3000/delete-student/${studentId}`, { // Обновленный URL
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}` // Передаем токен в заголовке Authorization
@@ -76,14 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 document.getElementById('response-message').textContent = data.message; // Показываем сообщение
-                // Перезагружаем список студентов
-                return fetch('http://localhost:3000/my-students', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+
+                // Обновляем список студентов
+                updateStudentList();
             })
+            .catch(error => console.error("Error:", error));
+    });
+
+
+
+    function updateStudentList() {
+        fetch('http://localhost:3000/my-students', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 const studentSelect = document.getElementById('studentSelect');
@@ -101,6 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => console.error("Error:", error));
-    });
+    }
 
 });

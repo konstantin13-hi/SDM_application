@@ -59,5 +59,13 @@ export default function (db) {
         });
     });
 
+    router.get('/students', (req, res) => {
+        db.query('SELECT id, name FROM students', (err, results) => {
+            if (err) return res.status(500).json({ message: 'Error fetching students' });
+            res.json(results);
+        });
+    });
+
+
     return router;
 }

@@ -6,14 +6,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 
-import coursesRoutes from './routes/coursesRoutes.js';
+
 import teacherRoutes from './routes/teacherRoutes.js';
-import addCourseRoutes from './routes/addCourseRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import authMiddleware from './middleware/authMiddleware.js';
-import homePageRoute from "./routes/homePageRoute.js";
-import cookieParser from "cookie-parser";
-import addStudentRoutes from "./routes/addStudentRoutes.js";
+import userRoutes from './routes/pagesRoutes/userRoutes.js';
+import homePageRoute from "./routes/pagesRoutes/homePageRoute.js";
+import addStudentRoutes from "./routes/studentsRoute.js";
+import coursesRoute from "./routes/coursesRoute.js";
 
 
 
@@ -26,7 +24,7 @@ app.use(cors({
     origin: 'http://localhost:5173'
 }));
 
-app.use(cookieParser());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -57,8 +55,7 @@ db.connect((err) => {
 
 app.use(userRoutes(db));
 app.use(teacherRoutes(db));
-app.use(addCourseRoutes(db));
-app.use(coursesRoutes(db));
+app.use(coursesRoute(db));
 app.use(homePageRoute(db));
 app.use(addStudentRoutes(db));
 
