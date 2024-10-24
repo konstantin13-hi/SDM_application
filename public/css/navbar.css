@@ -1,0 +1,17 @@
+
+body {
+    background-color: #f8f9fa; /* Светлый фон */
+}
+
+.container {
+    margin-top: 20px; /* Отступ сверху */
+}
+
+.settings-icon {
+    cursor: pointer;
+    color: #ffffff; /* Белый цвет для иконки шестеренки */
+}
+
+.navbar {
+    background-color: #007bff; /* Синий фон для шапки */
+}

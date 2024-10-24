@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+
+
+<!-- Место для навбара -->
+<div id="navbar-placeholder"></div>
+
+<!-- Место для модального окна -->
+<div id="modal-placeholder"></div>
+
+
+<div class="container mt-5">
+    <h1 class="text-center">Manage Students</h1>
+
+    <!-- Форма для добавления студента -->
+    <form id="add-student-form" class="mt-4">
+        <h2 class="text-primary">Add New Student</h2>
+        <div class="mb-3">
+            <label for="studentName" class="form-label">Student Name</label>
+            <input type="text" class="form-control" id="studentName" name="studentName" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="studentSurname" class="form-label">Student Surname</label>
+            <input type="text" class="form-control" id="studentSurname" name="studentSurname" required>
+        </div>
+
+        <button type="submit" class="btn btn-success">Add Student</button>
+    </form>
+
+    <!-- Форма для удаления студента -->
+    <form id="delete-student-form" class="mt-5">
+        <h2 class="text-danger">Remove Student</h2>
+        <div class="mb-3">
+            <label for="studentSelect" class="form-label">Select Student to Remove</label>
+            <select class="form-select" id="studentSelect" name="studentSelect" required>
+                <!-- Опции будут загружены через JavaScript -->
+            </select>
+        </div>
+        <button type="submit" class="btn btn-danger">Remove Student</button>
+    </form>
+
+    <div id="response-message" class="mt-3"></div>
+</div>
+
+
+<script type="module" src="/js/main.js"></script>
+<script src="/js/student-handler.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
