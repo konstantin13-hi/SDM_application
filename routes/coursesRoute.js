@@ -1,4 +1,5 @@
 import express from 'express';
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -34,20 +35,30 @@ export default function(db) {
         });
     });
 
+    router.get('/my-courses',authMiddleware, (req, res) => {  // Убедитесь, что это '/'
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
-    router.get('/teachers', (req, res) => {
-        db.query('SELECT id, name FROM teachers', (err, results) => {
-            if (err) return res.status(500).json({ message: 'Error fetching teachers' });
-            res.json(results);
+        const userId = req.user.id; // Получаем ID пользователя из токена
+
+        const query = `
+            SELECT courses.name, courses.start_date 
+            FROM courses 
+            WHERE teacher_id = ?
+        `;
+
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                console.error('Error fetching courses:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
+            res.json({ courses: results });
         });
     });
 
-    router.get('/students', (req, res) => {
-        db.query('SELECT id, name FROM students', (err, results) => {
-            if (err) return res.status(500).json({ message: 'Error fetching students' });
-            res.json(results);
-        });
-    });
+
+
 
     return router;
 }
