@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Attendance</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/viewAttendance.css"> <!-- Dostosuj, jeśli potrzebne -->
+  <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+
+  <!-- Placeholder dla navbar -->
+  <div id="navbar-placeholder"></div>
+
+  <!-- Placeholder dla modal-window -->
+  <div id="modal-placeholder"></div>
+
+  <div class="container mt-5">
+    <h1 class="text-center">Add Attendance</h1>
+    <form id="add-attendance-form" class="mt-4">
+      
+      <!-- Wybór daty -->
+      <div class="mb-3">
+        <label for="attendanceDateAdd" class="form-label">Date</label>
+        <input type="date" class="form-control" id="attendanceDateAdd" name="attendanceDateAdd" required>
+      </div>
+
+      <!-- Sekcja z listą uczniów -->
+      <div id="attendance-records" class="mb-3">
+        <!-- Lista uczniów zostanie załadowana dynamicznie przez JavaScript -->
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit Attendance</button>
+    </form>
+
+    <!-- Miejsce na wyniki lub komunikaty -->
+    <div id="add-attendance-results" class="mt-4">
+      <!-- Wyniki lub komunikaty zostaną załadowane tutaj -->
+    </div>
+  </div>
+
+  <!-- Skrypty JavaScript -->
+  <script type="module" src="/js/add-attendance-handler.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
