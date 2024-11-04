@@ -1,3 +1,5 @@
+// public/js/courses-handler.js
+
 // Получаем токен из localStorage
 const token = localStorage.getItem('token');
 
@@ -20,12 +22,14 @@ if (!token) {
             const courseItem = document.createElement('div');
             courseItem.className = 'card mb-3';
             courseItem.innerHTML = `
-                            <div class="card-body">
-                                <h5 class="card-title">${course.name}</h5>
-                                <p class="card-text">Start Date: ${course.start_date}</p>
-                                <a href="course-details.html?id=${course.id}" class="btn btn-primary">View Details</a>
-                            </div>
-                        `;
+          <div class="card-body">
+            <h5 class="card-title">${course.name}</h5>
+            <p class="card-text">Start Date: ${course.start_date}</p>
+            <a href="course-details.html?id=${course.id}" class="btn btn-primary">View Details</a>
+            <a href="addAttendance.html?courseId=${course.id}" class="btn btn-success ml-2">Add Attendance</a>
+            <a href="viewAttendance.html?courseId=${course.id}" class="btn btn-info ml-2">View Attendance</a>
+          </div>
+        `;
             coursesList.appendChild(courseItem);
           });
         } else {
@@ -34,5 +38,7 @@ if (!token) {
       })
       .catch(error => {
         console.error('Error:', error);
+        const coursesList = document.getElementById('courses-list');
+        coursesList.innerHTML = '<p>Error loading courses.</p>';
       });
 }
