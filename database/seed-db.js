@@ -1,3 +1,4 @@
+// seedDatabase.js
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';  // Подключаем bcrypt для хэширования паролей
 
@@ -18,7 +19,7 @@ async function seedDatabase() {
         const hashedPassword2 = await bcrypt.hash('password456', 10);
         const hashedPassword3 = await bcrypt.hash('password789', 10);
 
-        // Вставляем данные в таблицу учителей с паролями
+        // Вставляем данные в таблицу учителей с хэшированными паролями
         await connection.query(`
             INSERT INTO teachers (name, email, password) VALUES
             ('John Smith', 'john.smith@example.com', '${hashedPassword1}'),
@@ -36,19 +37,19 @@ async function seedDatabase() {
 
         // Вставляем данные в таблицу студентов
         await connection.query(`
-            INSERT INTO students (name, surname,teacher_id) VALUES
-            ('Charlie', 'Doe',1),
-            ('Emily', 'Green',1),
-            ('David', 'White',1);
+            INSERT INTO students (name, surname, teacher_id) VALUES
+            ('Charlie', 'Doe', 1),
+            ('Emily', 'Green', 1),
+            ('David', 'White', 1);
         `);
 
-        // Вставляем данные в таблицу посещаемости
+        // Вставляем данные в таблицу посещаемости с использованием поля 'status'
         await connection.query(`
-            INSERT INTO attendance (course_id, student_id, date, present) VALUES
-            (1, 1, '2023-10-05', true),
-            (1, 2, '2023-10-05', false),
-            (2, 1, '2023-11-10', true),
-            (2, 3, '2023-11-10', true);
+            INSERT INTO attendance (course_id, student_id, date, status) VALUES
+            (1, 1, '2023-10-05', 'present'),
+            (1, 2, '2023-10-05', 'absent'),
+            (2, 1, '2023-11-10', 'present'),
+            (2, 3, '2023-11-10', 'present');
         `);
 
         // Вставляем данные в таблицу оценок

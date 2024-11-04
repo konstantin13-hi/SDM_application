@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 
 const authMiddleware = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1]; // JWT может приходить как "Bearer token"
+    const authHeader = req.header('Authorization');
+    const token = authHeader && authHeader.split(' ')[1]; // JWT может приходить как "Bearer token"
 
     if (!token) {
-        window.location.href = 'loginPage.html';
         return res.status(401).json({ message: 'No token, authorization denied' });
     }
 
@@ -13,10 +13,8 @@ const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        res.status(401).json({ message: 'wrong token' });
-        window.location.href = 'loginPage.html';
+        return res.status(401).json({ message: 'Invalid token' });
     }
 };
 
 export default authMiddleware;
-
