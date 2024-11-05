@@ -6,7 +6,7 @@ const router = express.Router();
 
 export default function(db) {
 
-    // Endpoint do dodawania obecności
+    // Endpoint do dodawania obecności z zapobieganiem duplikatów
     router.post('/attendance/add', authMiddleware, (req, res) => {
         const teacherId = req.user.id;
         const { courseId, date, attendanceRecords } = req.body;
@@ -27,18 +27,74 @@ export default function(db) {
                 return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
             }
 
-            // Przygotowanie danych do wstawienia
-            const insertQuery = `INSERT INTO attendance (course_id, student_id, date, status) VALUES ?`;
-            const values = attendanceRecords.map(record => [courseId, record.studentId, date, record.status]);
+            // Inicjalizacja tablic do przechowywania dodanych i pominiętych rekordów
+            const addedRecords = [];
+            const skippedRecords = [];
 
-            db.query(insertQuery, [values], (err) => {
-                if (err) {
-                    console.error('Error adding attendance:', err);
-                    return res.status(500).json({ message: 'Server error' });
+            // Funkcja do sprawdzania i dodawania obecności bez duplikatów
+            const addAttendance = (index) => {
+                if (index >= attendanceRecords.length) {
+                    // Wszystkie rekordy zostały przetworzone, wysyłamy odpowiedź
+                    return res.json({
+                        message: 'Attendance processed.',
+                        addedRecords,
+                        skippedRecords
+                    });
                 }
 
-                res.json({ message: 'Attendance successfully recorded!' });
-            });
+                const { studentId, status } = attendanceRecords[index];
+                const checkAttendanceQuery = `SELECT * FROM attendance WHERE course_id = ? AND student_id = ? AND date = ?`;
+                db.query(checkAttendanceQuery, [courseId, studentId, date], (err, attendanceResults) => {
+                    if (err) {
+                        console.error('Error checking attendance:', err);
+                        return res.status(500).json({ message: 'Server error' });
+                    }
+
+                    if (attendanceResults.length > 0) {
+                        // Jeśli rekord już istnieje, dodajemy do skippedRecords
+                        // Pobieramy imię i nazwisko studenta
+                        const getStudentQuery = `SELECT name, surname FROM students WHERE id = ?`;
+                        db.query(getStudentQuery, [studentId], (err, studentResults) => {
+                            if (err) {
+                                console.error('Error fetching student data:', err);
+                                return res.status(500).json({ message: 'Server error' });
+                            }
+
+                            if (studentResults.length > 0) {
+                                const student = studentResults[0];
+                                skippedRecords.push({ 
+                                    studentId, 
+                                    name: student.name, 
+                                    surname: student.surname, 
+                                    status 
+                                });
+                            } else {
+                                skippedRecords.push({ 
+                                    studentId, 
+                                    name: 'Unknown', 
+                                    surname: 'Unknown', 
+                                    status 
+                                });
+                            }
+                            addAttendance(index + 1);
+                        });
+                    } else {
+                        // Dodajemy nowy rekord
+                        const insertQuery = `INSERT INTO attendance (course_id, student_id, date, status) VALUES (?, ?, ?, ?)`;
+                        db.query(insertQuery, [courseId, studentId, date, status], (err) => {
+                            if (err) {
+                                console.error('Error adding attendance:', err);
+                                return res.status(500).json({ message: 'Server error' });
+                            }
+                            addedRecords.push({ studentId, status });
+                            addAttendance(index + 1);
+                        });
+                    }
+                });
+            };
+
+            // Rozpoczynamy proces dodawania obecności
+            addAttendance(0);
         });
     });
 
@@ -46,6 +102,8 @@ export default function(db) {
     router.get('/attendance/course/:courseId/date/:date', authMiddleware, (req, res) => {
         const teacherId = req.user.id;
         const { courseId, date } = req.params;
+
+        console.log('Fetching attendance for courseId:', courseId, 'date:', date); // Dodany log
 
         // Sprawdzenie, czy kurs należy do nauczyciela
         const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
@@ -71,12 +129,13 @@ export default function(db) {
                     return res.status(500).json({ message: 'Server error' });
                 }
 
+                console.log('Attendance Results:', attendanceResults); // Dodany log
                 res.json({ attendance: attendanceResults });
             });
         });
     });
 
-    // Endpoint do pobierania wszystkich dat obecności dla kursu
+    // Endpoint do pobierania dostępnych dat obecności dla kursu
     router.get('/attendance/course/:courseId/dates', authMiddleware, (req, res) => {
         const teacherId = req.user.id;
         const { courseId } = req.params;
@@ -92,9 +151,9 @@ export default function(db) {
                 return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
             }
 
-            // Pobranie unikalnych dat obecności
+            // Pobranie unikalnych dat obecności w formacie 'YYYY-MM-DD'
             const getDatesQuery = `
-                SELECT DISTINCT date
+                SELECT DISTINCT DATE_FORMAT(date, '%Y-%m-%d') AS date
                 FROM attendance
                 WHERE course_id = ?
                 ORDER BY date DESC
@@ -105,7 +164,10 @@ export default function(db) {
                     return res.status(500).json({ message: 'Server error' });
                 }
 
-                res.json({ dates: dateResults.map(r => r.date) });
+                // Mapowanie wyników do prostszej struktury
+                const dates = dateResults.map(r => r.date);
+                console.log('Available Dates:', dates); // Dodany log
+                res.json({ dates });
             });
         });
     });

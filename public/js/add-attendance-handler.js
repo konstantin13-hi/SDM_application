@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadNavbar();
     loadModal();
 
+    // Ustawienie domyślnej daty na dzisiejszą
+    const attendanceDateAdd = document.getElementById('attendanceDateAdd');
+    const today = new Date().toISOString().split('T')[0];
+    attendanceDateAdd.value = today;
+
     // Obsługa przycisku wylogowania
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
@@ -18,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Inicjalizacja elementów formularza
-    const attendanceDateAdd = document.getElementById('attendanceDateAdd');
     const addAttendanceForm = document.getElementById('add-attendance-form');
     const attendanceRecordsDiv = document.getElementById('attendance-records');
     const addAttendanceResults = document.getElementById('add-attendance-results');
@@ -32,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Pobranie courseId z URL
     const courseId = getQueryParam('courseId');
     if (!courseId) {
-        addAttendanceResults.innerHTML = '<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>';
+        addAttendanceResults.innerHTML = `<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>`;
         addAttendanceForm.style.display = 'none';
         return;
     }
@@ -189,10 +193,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
             if (response.ok) {
-                addAttendanceResults.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                // Przygotowanie komunikatów
+                let message = `<div class="alert alert-success">${data.message}</div>`;
+
+                if (data.addedRecords.length > 0) {
+                    message += `<div class="alert alert-success">Added attendance for ${data.addedRecords.length} student(s).</div>`;
+                }
+
+                if (data.skippedRecords.length > 0) {
+                    // Pobranie nazw studentów na podstawie ID
+                    const skippedIds = data.skippedRecords.map(record => record.studentId);
+                    // Załóżmy, że masz listę studentów w frontendzie lub możesz je ponownie pobrać
+                    // Dla uproszczenia, tutaj tylko wyświetlamy ID
+                    message += `<div class="alert alert-warning">Attendance already exists for student ID(s): ${skippedIds.join(', ')}.</div>`;
+                }
+
+                addAttendanceResults.innerHTML = message;
                 // Resetowanie formularza
                 addAttendanceForm.reset();
                 attendanceRecordsDiv.innerHTML = '';
+                // Ustawienie domyślnej daty na dzisiaj po resetowaniu
+                attendanceDateAdd.value = today;
                 fetchStudents(courseId);
             } else {
                 addAttendanceResults.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
