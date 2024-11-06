@@ -1,4 +1,4 @@
-// routes/attendanceRoute.js
+
 import express from 'express';
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -11,7 +11,6 @@ export default function(db) {
         const teacherId = req.user.id;
         const { courseId, date, attendanceRecords } = req.body;
 
-        // Sprawdzenie poprawności danych
         if (!courseId || !date || !Array.isArray(attendanceRecords)) {
             return res.status(400).json({ message: 'Invalid input data' });
         }
@@ -34,7 +33,6 @@ export default function(db) {
             // Funkcja do sprawdzania i dodawania obecności bez duplikatów
             const addAttendance = (index) => {
                 if (index >= attendanceRecords.length) {
-                    // Wszystkie rekordy zostały przetworzone, wysyłamy odpowiedź
                     return res.json({
                         message: 'Attendance processed.',
                         addedRecords,
@@ -51,8 +49,6 @@ export default function(db) {
                     }
 
                     if (attendanceResults.length > 0) {
-                        // Jeśli rekord już istnieje, dodajemy do skippedRecords
-                        // Pobieramy imię i nazwisko studenta
                         const getStudentQuery = `SELECT name, surname FROM students WHERE id = ?`;
                         db.query(getStudentQuery, [studentId], (err, studentResults) => {
                             if (err) {
@@ -79,7 +75,6 @@ export default function(db) {
                             addAttendance(index + 1);
                         });
                     } else {
-                        // Dodajemy nowy rekord
                         const insertQuery = `INSERT INTO attendance (course_id, student_id, date, status) VALUES (?, ?, ?, ?)`;
                         db.query(insertQuery, [courseId, studentId, date, status], (err) => {
                             if (err) {
@@ -93,7 +88,6 @@ export default function(db) {
                 });
             };
 
-            // Rozpoczynamy proces dodawania obecności
             addAttendance(0);
         });
     });
@@ -103,9 +97,8 @@ export default function(db) {
         const teacherId = req.user.id;
         const { courseId, date } = req.params;
 
-        console.log('Fetching attendance for courseId:', courseId, 'date:', date); // Dodany log
+        console.log('Fetching attendance for courseId:', courseId, 'date:', date); 
 
-        // Sprawdzenie, czy kurs należy do nauczyciela
         const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
         db.query(checkCourseQuery, [courseId, teacherId], (err, results) => {
             if (err) {
@@ -129,7 +122,7 @@ export default function(db) {
                     return res.status(500).json({ message: 'Server error' });
                 }
 
-                console.log('Attendance Results:', attendanceResults); // Dodany log
+                console.log('Attendance Results:', attendanceResults); 
                 res.json({ attendance: attendanceResults });
             });
         });
@@ -166,11 +159,56 @@ export default function(db) {
 
                 // Mapowanie wyników do prostszej struktury
                 const dates = dateResults.map(r => r.date);
-                console.log('Available Dates:', dates); // Dodany log
+                console.log('Available Dates:', dates); 
                 res.json({ dates });
             });
         });
     });
+
+    // Endpoint do aktualizacji obecności
+    router.put('/attendance/update', authMiddleware, (req, res) => {
+        const teacherId = req.user.id;
+        const { courseId, date, studentId, newStatus } = req.body;
+
+        // Sprawdzenie poprawności danych
+        if (!courseId || !date || !studentId || !newStatus) {
+            return res.status(400).json({ message: 'Invalid input data' });
+        }
+
+        // Sprawdzenie, czy kurs należy do nauczyciela
+        const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
+        db.query(checkCourseQuery, [courseId, teacherId], (err, results) => {
+            if (err) {
+                console.error('Error checking course:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
+            if (results.length === 0) {
+                return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
+            }
+
+            // Walidacja nowego statusu
+            const validStatuses = ['present', 'absent', 'late', 'excused'];
+            if (!validStatuses.includes(newStatus.toLowerCase())) {
+                return res.status(400).json({ message: 'Invalid status value.' });
+            }
+
+            // Aktualizacja statusu obecności
+            const updateAttendanceQuery = `UPDATE attendance SET status = ? WHERE course_id = ? AND student_id = ? AND date = ?`;
+            db.query(updateAttendanceQuery, [newStatus, courseId, studentId, date], (err, updateResults) => {
+                if (err) {
+                    console.error('Error updating attendance:', err);
+                    return res.status(500).json({ message: 'Server error' });
+                }
+
+                if (updateResults.affectedRows === 0) {
+                    return res.status(404).json({ message: 'Attendance record not found.' });
+                }
+
+                res.json({ message: 'Attendance status updated successfully.' });
+            });
+        });
+    });
+
 
     return router;
 }
