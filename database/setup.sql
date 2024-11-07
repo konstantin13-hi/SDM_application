@@ -60,3 +60,12 @@ CREATE TABLE IF NOT EXISTS course_students (
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
+
+CREATE TABLE tests (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  course_id INT,
+  name VARCHAR(255) NOT NULL,
+  weight INT DEFAULT 1,
+  date DATE,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
