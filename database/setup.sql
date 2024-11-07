@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS courses (
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
 );
 
--- Таблица студентов
+-- Таблица студентова
 CREATE TABLE IF NOT EXISTS students (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
