@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="course-details.html?id=${course.id}" class="btn btn-primary">View Details</a>
             <a href="addAttendance.html?courseId=${course.id}" class="btn btn-success ml-2">Add Attendance</a>
             <a href="viewAttendance.html?courseId=${course.id}" class="btn btn-info ml-2">View Attendance</a>
-            <a href="addTest.html?courseId=${course.id}" class="btn btn-warning ml-2">Add Test</a> <!-- Nowy przycisk -->
+            <a href="addAssessment.html?courseId=${course.id}" class="btn btn-warning ml-2">Add Assessment</a>
+            <a href="gradeStudents.html?courseId=${course.id}" class="btn btn-secondary ml-2">Grade Students</a> <!-- Nowy przycisk -->
             <button class="btn btn-danger ml-2 delete-course-btn" data-course-id="${course.id}" data-course-name="${course.name}">Delete Course</button>
           </div>
         `;

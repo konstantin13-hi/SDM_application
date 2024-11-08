@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS courses (
     FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE
 );
 
--- Таблица студентов
+-- Таблица студентова
 CREATE TABLE IF NOT EXISTS students (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -44,10 +44,10 @@ CREATE TABLE IF NOT EXISTS grades (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
     student_id INT NOT NULL,
-    grade DECIMAL(5, 2) NOT NULL, -- Оценка студента
+    grade DECIMAL(5, 2) NULL, -- Оценка студента
     form_type VARCHAR(255) NOT NULL, -- Тип оценки (например, экзамен, тест и т.д.)
-    weight DECIMAL(3, 2) NOT NULL, -- Вес оценки
-    date DATE NOT NULL, -- Дата выставления оценки
+    weight DECIMAL(5, 2) NOT NULL, -- Вес оценки
+    date DATE NULL, -- Дата выставления оценки
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
@@ -61,11 +61,3 @@ CREATE TABLE IF NOT EXISTS course_students (
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
-CREATE TABLE tests (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  course_id INT,
-  name VARCHAR(255) NOT NULL,
-  weight INT DEFAULT 1,
-  date DATE,
-  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-);
