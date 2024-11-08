@@ -1,0 +1,17 @@
+/* public/css/gradeType.css */
+
+/* Stylizacje dla tabeli ocen */
+#grades-table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#grades-table th, #grades-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+#grades-table .form-control {
+    width: 100px;
+    margin: 0 auto;
+}

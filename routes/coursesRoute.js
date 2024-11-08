@@ -96,5 +96,31 @@ export default function (db) {
         });
     });
 
+    router.delete('/delete-course/:id', authMiddleware, (req, res) => {
+        
+        const courseId = req.params.id;
+        const teacherId = req.user.id;
+        
+        console.log("Attempting to delete course with ID:", courseId, "for teacher ID:", teacherId);
+
+        const query = `DELETE FROM courses WHERE id = ? AND teacher_id = ?`;
+
+        console.log("Request received to delete course with ID:", req.params.id);
+
+        db.query(query, [courseId, teacherId], (err, results) => {
+          if (err) {
+            console.error('Error deleting course:', err);
+            return res.status(500).json({ message: 'Server error' });
+          }
+          if (results.affectedRows === 0) {
+            console.log('No course found or does not belong to teacher.');
+            return res.status(404).json({ message: 'Course not found or does not belong to you.' });
+          }
+          res.json({ message: 'Course successfully deleted!' });
+        });
+      });
+    
+
+
     return router;
 }

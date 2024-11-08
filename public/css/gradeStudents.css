@@ -1,0 +1,22 @@
+/* public/css/gradeStudents.css */
+
+/* Stylizacje dla kafelków typów ocen */
+.assessment-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.assessment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.assessment-card .card-body {
+    text-align: center;
+}
+
+.assessment-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #007bff;
+}
