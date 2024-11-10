@@ -74,37 +74,7 @@ export default function(db) {
     });
 
     // Endpoint do pobierania unikalnych typów ocen dla kursu
-    router.get('/course/:courseId/assessment-types', authMiddleware, (req, res) => {
-        const teacherId = req.user.id;
-        const { courseId } = req.params;
 
-        // Sprawdzenie, czy kurs należy do nauczyciela
-        const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
-        db.query(checkCourseQuery, [courseId, teacherId], (err, results) => {
-            if (err) {
-                console.error('Error checking course:', err);
-                return res.status(500).json({ message: 'Server error' });
-            }
-            if (results.length === 0) {
-                return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
-            }
-
-            // Pobranie unikalnych typów ocen
-            const getAssessmentTypesQuery = `
-                SELECT DISTINCT form_type FROM grades
-                WHERE course_id = ?
-                ORDER BY form_type ASC
-            `;
-            db.query(getAssessmentTypesQuery, [courseId], (err, typeResults) => {
-                if (err) {
-                    console.error('Error fetching assessment types:', err);
-                    return res.status(500).json({ message: 'Server error' });
-                }
-
-                res.json({ assessmentTypes: typeResults });
-            });
-        });
-    });
 
     // Endpoint do pobierania studentów przypisanych do kursu
     router.get('/course/:courseId/students', authMiddleware, (req, res) => {

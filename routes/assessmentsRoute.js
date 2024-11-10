@@ -193,6 +193,39 @@ export default function(db) {
         });
     });
 
+    router.get('/course/:courseId/assessment-types', authMiddleware, (req, res) => {
+        const teacherId = req.user.id;
+        const { courseId } = req.params;
+
+        // Проверка, принадлежит ли курс учителю
+        const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
+        db.query(checkCourseQuery, [courseId, teacherId], (err, results) => {
+            if (err) {
+                console.error('Error checking course:', err);
+                return res.status(500).json({ message: 'Server error' });
+            }
+            if (results.length === 0) {
+                return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
+            }
+
+            // Получение уникальных форм оценивания из таблицы assessment_forms
+            const getAssessmentFormsQuery = `
+            SELECT id, form_type, weight, date_created 
+            FROM assessment_forms
+            WHERE course_id = ?
+            ORDER BY form_type ASC
+        `;
+            db.query(getAssessmentFormsQuery, [courseId], (err, formsResults) => {
+                if (err) {
+                    console.error('Error fetching assessment forms:', err);
+                    return res.status(500).json({ message: 'Server error' });
+                }
+
+                res.json({ assessmentTypes: formsResults });
+            });
+        });
+    });
+
     return router;
 }
 
