@@ -12,6 +12,7 @@ import addStudentRoutes from "./routes/studentsRoute.js";
 import coursesRoute from "./routes/coursesRoute.js";
 import attendanceRoute from "./routes/attendanceRoute.js";
 import gradesRoute from './routes/gradesRoute.js';
+import assessmentsRoute from "./routes/assessmentsRoute.js";
 
 const app = express();
 const port = 3000;
@@ -53,3 +54,4 @@ app.use(homePageRoute(db));
 app.use(addStudentRoutes(db));
 app.use(attendanceRoute(db));
 app.use('/grades', gradesRoute(db));
+app.use(assessmentsRoute(db))

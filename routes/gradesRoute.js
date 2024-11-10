@@ -263,5 +263,17 @@ export default function(db) {
         });
     });
 
+    router.put('/grades/update-assessment', async (req, res) => {
+        const { id, form_type, weight } = req.body;
+        try {
+            await db.query('UPDATE grades SET form_type = ?, weight = ? WHERE id = ?', [form_type, weight, id]);
+            res.json({ success: true, message: 'Оценка обновлена.' });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Не удалось обновить оценку.' });
+        }
+    });
+
+
     return router;
 }
