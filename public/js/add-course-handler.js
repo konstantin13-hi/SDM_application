@@ -1,4 +1,4 @@
-// js/add-course-handler.js
+// public/js/add-course-handler.js
 
 document.getElementById('course-form').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -6,12 +6,14 @@ document.getElementById('course-form').addEventListener('submit', async function
     const formData = new FormData(this);
     const data = {
         courseName: formData.get('courseName'),
-        teacher: formData.get('teacher'),
+        // Uwaga: Pole 'teacher' nie jest potrzebne, ponieważ backend identyfikuje nauczyciela na podstawie tokenu.
+        // Możesz je usunąć z formularza i z kodu frontendowego.
+        // teacher: formData.get('teacher'),
         students: Array.from(document.querySelectorAll('input[name="student"]:checked')).map(checkbox => checkbox.value),
         startDate: formData.get('startDate'),
     };
 
-    // Валидация, чтобы убедиться, что выбран хотя бы один студент
+    // Weryfikacja, że wybrano przynajmniej jednego studenta
     if (data.students.length === 0) {
         document.getElementById('response-message').textContent = 'Please select at least one student.';
         return;
@@ -19,21 +21,21 @@ document.getElementById('course-form').addEventListener('submit', async function
 
     console.log('Sending data:', data);
 
-    // Получение токена из localStorage
+    // Pobranie tokenu z localStorage
     const token = localStorage.getItem('token');
 
     try {
-        const response = await fetch('http://localhost:3000/courses', {
+        const response = await fetch('http://localhost:3000/courses', { // Zmieniono z /api/courses na /courses
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Добавление токена в заголовок
+                'Authorization': `Bearer ${token}` // Dodanie tokenu do nagłówka
             },
             body: JSON.stringify(data)
         });
 
         if (response.status === 401) {
-            // Токен недействителен или отсутствует - перенаправление на страницу логина
+            // Token jest nieważny lub brak - przekierowanie na stronę logowania
             window.location.href = 'loginPage.html';
             return;
         }
@@ -45,7 +47,7 @@ document.getElementById('course-form').addEventListener('submit', async function
     }
 });
 
-// Инициализация страницы
+// Inicjalizacja strony
 window.onload = async function() {
     const studentContainer = document.getElementById('students');
     const searchInput = document.getElementById('studentSearch');
@@ -58,11 +60,11 @@ window.onload = async function() {
     let totalPages = 1;
     let currentSearch = '';
 
-    // Функция для получения студентов с сервера
+    // Funkcja do pobierania studentów z serwera
     async function fetchStudents() {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3000/students?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=${limit}`, {
+            const response = await fetch(`http://localhost:3000/students?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=${limit}`, { // Zmieniono z /api/students na /students
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -72,7 +74,6 @@ window.onload = async function() {
             }
             const data = await response.json();
             console.log('Fetched students:', data);
-
             renderStudents(data.students);
             setupPagination(data.pagination);
         } catch (error) {
@@ -81,24 +82,24 @@ window.onload = async function() {
         }
     }
 
-    // Функция для отображения студентов
+    // Funkcja do wyświetlania studentów
     function renderStudents(students) {
-        studentContainer.innerHTML = ''; // Очистка предыдущих результатов
+        studentContainer.innerHTML = ''; // Czyszczenie poprzednich wyników
 
-        // Отображение каждого студента
+        // Wyświetlanie każdego studenta
         students.forEach(student => {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.name = 'student';
             checkbox.value = student.id;
-            checkbox.id = `student-${student.id}`; // Уникальный ID
+            checkbox.id = `student-${student.id}`; // Unikalny ID
 
             const label = document.createElement('label');
-            label.htmlFor = `student-${student.id}`; // Связывание label с checkbox
-            label.textContent = `${student.name} ${student.surname}`; // Отображение имени и фамилии
+            label.htmlFor = `student-${student.id}`; // Powiązanie label z checkbox
+            label.textContent = `${student.name} ${student.surname}`; // Wyświetlanie imienia i nazwiska
 
             const div = document.createElement('div');
-            div.classList.add('form-check'); // Класс Bootstrap для лучшей стилизации
+            div.classList.add('form-check'); // Klasa Bootstrap dla lepszej stylizacji
             checkbox.classList.add('form-check-input');
             label.classList.add('form-check-label');
 
@@ -108,20 +109,20 @@ window.onload = async function() {
         });
     }
 
-    // Функция для настройки пагинации
+    // Funkcja do ustawiania paginacji
     function setupPagination(pagination) {
         totalPages = pagination.totalPages;
         currentPage = pagination.currentPage;
 
-        // Включение/выключение кнопок "Previous" и "Next"
+        // Włączanie/wyłączanie przycisków "Previous" i "Next"
         prevPageBtn.classList.toggle('disabled', currentPage === 1);
         nextPageBtn.classList.toggle('disabled', currentPage === totalPages);
 
-        // Удаление существующих номеров страниц
+        // Usuwanie istniejących numerów stron
         const existingPageNumbers = document.querySelectorAll('.page-number');
         existingPageNumbers.forEach(page => page.remove());
 
-        // Добавление новых номеров страниц
+        // Dodawanie nowych numerów stron
         for (let i = 1; i <= totalPages; i++) {
             const li = document.createElement('li');
             li.classList.add('page-item', 'page-number');
@@ -129,7 +130,7 @@ window.onload = async function() {
             li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
             paginationUl.insertBefore(li, nextPageBtn);
 
-            // Обработка клика на номер страницы
+            // Obsługa kliknięcia na numer strony
             li.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (currentPage === i) return;
@@ -138,7 +139,7 @@ window.onload = async function() {
             });
         }
 
-        // Обработка клика на кнопку "Previous"
+        // Obsługa kliknięcia na przycisk "Previous"
         prevPageBtn.onclick = function(e) {
             e.preventDefault();
             if (currentPage > 1) {
@@ -147,7 +148,7 @@ window.onload = async function() {
             }
         };
 
-        // Обработка клика на кнопку "Next"
+        // Obsługa kliknięcia na przycisk "Next"
         nextPageBtn.onclick = function(e) {
             e.preventDefault();
             if (currentPage < totalPages) {
@@ -157,13 +158,13 @@ window.onload = async function() {
         };
     }
 
-    // Обработка поиска
+    // Obsługa wyszukiwania
     searchInput.addEventListener('input', function() {
         currentSearch = this.value.trim();
-        currentPage = 1; // Сброс на первую страницу при новом поиске
+        currentPage = 1; // Resetowanie na pierwszą stronę przy nowym wyszukiwaniu
         fetchStudents();
     });
 
-    // Первоначальное получение студентов
+    // Pobranie studentów po załadowaniu strony
     fetchStudents();
 };
