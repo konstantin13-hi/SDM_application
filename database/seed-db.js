@@ -1,13 +1,12 @@
-// seedDatabase.js
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';  // Подключаем bcrypt для хэширования паролей
 
 async function seedDatabase() {
     const connection = await mysql.createConnection({
         host: 'localhost',
-        user: 'root', // Замените на вашего пользователя MySQL
-        password: 'MyPa$$word1', // Замените на ваш пароль MySQL
-        database: 'school', // Используем базу данных, которую вы создали
+        user: 'root',
+        password: 'MyPa$$word1',
+        database: 'school',
         multipleStatements: true
     });
 
@@ -43,7 +42,7 @@ async function seedDatabase() {
             ('David', 'White', 1);
         `);
 
-        // Вставляем данные в таблицу посещаемости с использованием поля 'status'
+        // Вставляем данные в таблицу посещаемости
         await connection.query(`
             INSERT INTO attendance (course_id, student_id, date, status) VALUES
             (1, 1, '2023-10-05', 'present'),
@@ -52,13 +51,22 @@ async function seedDatabase() {
             (2, 3, '2023-11-10', 'present');
         `);
 
-        // Вставляем данные в таблицу оценок
+        // Вставляем данные в таблицу форм оценивания
         await connection.query(`
-            INSERT INTO grades (course_id, student_id, grade, form_type, weight, date) VALUES
-            (1, 1, 85.5, 'Homework', 0.2, '2023-10-10'),
-            (1, 2, 90.0, 'Exam', 0.5, '2023-10-15'),
-            (2, 1, 75.0, 'Project', 0.3, '2023-11-15'),
-            (3, 3, 88.5, 'Exam', 0.5, '2023-12-20');
+            INSERT INTO assessment_forms (course_id, form_type, weight) VALUES
+            (1, 'Homework', 0.2),
+            (1, 'Exam', 0.5),
+            (2, 'Project', 0.3),
+            (3, 'Exam', 0.5);
+        `);
+
+        // Вставляем данные в таблицу оценок, используя assessment_form_id
+        await connection.query(`
+            INSERT INTO grades (course_id, student_id, assessment_form_id, grade, date) VALUES
+            (1, 1, 1, 85.5, '2023-10-10'),  -- Homework for Charlie
+            (1, 2, 2, 90.0, '2023-10-15'),  -- Exam for Emily
+            (2, 1, 3, 75.0, '2023-11-15'),  -- Project for Charlie
+            (3, 3, 4, 88.5, '2023-12-20');  -- Exam for David
         `);
 
         // Вставляем данные в таблицу course_students для регистрации студентов на курсы
