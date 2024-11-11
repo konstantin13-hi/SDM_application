@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="viewAttendance.html?courseId=${course.id}" class="btn btn-info ml-2">View Attendance</a>
             <a href="addAssessment.html?courseId=${course.id}" class="btn btn-warning ml-2">Add Assessment</a>
             <a href="gradeStudents.html?courseId=${course.id}" class="btn btn-secondary ml-2">Grade Students</a> <!-- Nowy przycisk -->
+            <a href="finalGrade.html?courseId=${course.id}" class="btn btn-dark ml-2">Final Grade</a>
             <button class="btn btn-danger ml-2 delete-course-btn" data-course-id="${course.id}" data-course-name="${course.name}">Delete Course</button>
           </div>
         `;
