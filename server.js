@@ -53,5 +53,5 @@ app.use(coursesRoute(db));
 app.use(homePageRoute(db));
 app.use(addStudentRoutes(db));
 app.use(attendanceRoute(db));
-app.use('/grades', gradesRoute(db));
+app.use(gradesRoute(db));
 app.use(assessmentsRoute(db))
