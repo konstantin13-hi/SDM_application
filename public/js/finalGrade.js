@@ -1,44 +1,51 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const courseId = new URLSearchParams(window.location.search).get('courseId');
 
+    fetch(`http://localhost:3000/gr/course/${courseId}/final-grades`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    })
+        .then(r => r.json())
+        .then(data => {
+            const gradesTableBody = document.getElementById('grades-table-body');
+            const noStudentsAlert = document.getElementById('no-students');
 
-const urlParams = new URLSearchParams(window.location.search);
-const courseId = urlParams.get('courseId');
+            if (data.students && data.students.length > 0) {
+                noStudentsAlert.classList.add('d-none');
+                data.students.forEach((student, index) => {
+                    // Проверка значения final_grade
+                    const gradeValue = student.final_grade !== null ? parseFloat(student.final_grade) : null;
 
+                    // Определяем цвет на основе оценки
+                    let gradeColor = '';
+                    if (gradeValue === null) {
+                        gradeColor = ''; // Без цвета, если оценки нет
+                    } else if (gradeValue < 3) {
+                        gradeColor = 'bg-danger'; // Красный для низкой оценки
+                    } else if (gradeValue >= 3 && gradeValue < 4) {
+                        gradeColor = 'bg-warning'; // Желтый для средней оценки
+                    } else {
+                        gradeColor = 'bg-success'; // Зеленый для высокой оценки
+                    }
 
-
-async function fetchFinalGrades() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    try {
-        const response = await fetch(`http://localhost:3000/grades/course/${courseId}/final-grades`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+                    // Добавляем строку в таблицу
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${student.name}</td>
+                            <td>${student.surname}</td>
+                            <td class="${gradeColor} text-white">
+                                ${gradeValue !== null ? gradeValue.toFixed(2) : 'N/A'}
+                            </td>
+                        </tr>
+                    `;
+                    gradesTableBody.innerHTML += row;
+                });
+            } else {
+                noStudentsAlert.classList.remove('d-none');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching final grades:', error);
         });
-        const data = await response.json();
-
-        if (response.ok) {
-            displayFinalGrades(data.students);
-        } else {
-            document.getElementById('final-grades-list').innerHTML = `<p class="text-danger">${data.message}</p>`;
-        }
-    } catch (error) {
-        console.error('Error fetching final grades:', error);
-        document.getElementById('final-grades-list').innerHTML = `<p class="text-danger">Error fetching final grades.</p>`;
-    }
-}
-
-function displayFinalGrades(students) {
-    const container = document.getElementById('final-grades-list');
-    container.innerHTML = students.map(student => `
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">${student.name} ${student.surname}</h5>
-                    <p class="card-text">Final Grade: ${student.final_grade.toFixed(2)}</p>
-                </div>
-            </div>
-        `).join('');
-}
-
-fetchFinalGrades();
+});
