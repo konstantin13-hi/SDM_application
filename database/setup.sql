@@ -1,4 +1,3 @@
--- Создание базы данных school, если она не существует
 CREATE DATABASE IF NOT EXISTS school;
 USE school;
 
@@ -39,17 +38,27 @@ CREATE TABLE IF NOT EXISTS attendance (
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
 );
 
--- Таблица оценок
+-- Таблица форм оценивания (например, тест, экзамен)
+CREATE TABLE IF NOT EXISTS assessment_forms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    form_type VARCHAR(255) NOT NULL, -- Тип формы (например, тест, экзамен)
+    weight DECIMAL(5, 2) NOT NULL, -- Вес формы
+    date_created DATE DEFAULT (CURDATE()), -- Дата создания формы
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- Таблица оценок студентов по каждой форме оценивания
 CREATE TABLE IF NOT EXISTS grades (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
     student_id INT NOT NULL,
-    grade DECIMAL(5, 2) NOT NULL, -- Оценка студента
-    form_type VARCHAR(255) NOT NULL, -- Тип оценки (например, экзамен, тест и т.д.)
-    weight DECIMAL(3, 2) NOT NULL, -- Вес оценки
-    date DATE NOT NULL, -- Дата выставления оценки
+    assessment_form_id INT NOT NULL, -- Ссылка на форму оценивания
+    grade DECIMAL(5, 2) NULL, -- Оценка студента
+    date DATE NULL, -- Дата выставления оценки
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (assessment_form_id) REFERENCES assessment_forms(id) ON DELETE CASCADE
 );
 
 -- Таблица связи курсов и студентов
@@ -59,13 +68,4 @@ CREATE TABLE IF NOT EXISTS course_students (
     PRIMARY KEY (course_id, student_id),
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
-);
-
-CREATE TABLE tests (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  course_id INT,
-  name VARCHAR(255) NOT NULL,
-  weight INT DEFAULT 1,
-  date DATE,
-  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );

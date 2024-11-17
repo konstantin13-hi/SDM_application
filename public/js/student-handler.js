@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const studentSurname = document.getElementById('studentSurname').value;
         const namePattern = /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$/;
 
-        // Walidacja pól
         if (!namePattern.test(studentName) || !namePattern.test(studentSurname)) {
             displayMessage('Only letters are allowed in Student Name and Surname', 'danger', 'response-message');
             return;
@@ -35,9 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayMessage(data.message, 'success', 'response-message');
                     updateStudentList();
 
-                    // Czyścimy formularz
-                    document.getElementById('studentName').value = ''; // Czyścimy pole imienia
-                    document.getElementById('studentSurname').value = ''; // Czyścimy pole nazwiska
+                    document.getElementById('studentName').value = ''; 
+                    document.getElementById('studentSurname').value = ''; 
                 } else {
                     displayMessage('Error adding student', 'danger', 'response-message');
                 }
@@ -66,8 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     displayMessage(data.message, 'success', 'response-message2');
                     updateStudentList();
-                    // Czyścimy formularz wyszukiwania studenta
-                    document.getElementById('searchStudent').value = ''; // Wyczyszczenie pola wyszukiwania
+                    document.getElementById('searchStudent').value = ''; 
                 } else {
                     displayMessage('Error deleting student', 'danger', 'response-message2');
                 }
@@ -85,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
         messageDiv.className = `alert alert-${type}`;
         messageDiv.classList.remove('d-none');
 
-        // Ukrywanie komunikatu po 3 sekundach
         setTimeout(() => {
             messageDiv.classList.add('d-none');
         }, 3000);
@@ -122,40 +118,36 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchValue = document.getElementById('searchStudent').value.toLowerCase();
         const options = document.getElementById('studentSelect').options;
 
-        // Przywracamy wszystkie opcje przed filtrowaniem
         for (let i = 0; i < options.length; i++) {
-            options[i].style.display = ''; // Pokazuje wszystkie opcje
+            options[i].style.display = ''; 
         }
 
-        let found = false; // Flaga do sprawdzenia, czy znaleziono studenta
+        let found = false;
 
-        // Przechodzimy przez wszystkie opcje i ukrywamy te, które nie pasują
         for (let i = 0; i < options.length; i++) {
             const option = options[i];
             const studentText = option.textContent.toLowerCase();
 
             // Filtrowanie opcji
             if (studentText.includes(searchValue)) {
-                option.style.display = ''; // Pokazuje opcję
-                // Ustawiamy wartość studentSelect na pasującego studenta
+                option.style.display = ''; 
                 document.getElementById('studentSelect').value = option.value; 
-                found = true; // Ustaw flagę na true
-                break; // Przerywamy pętlę po znalezieniu pierwszego pasującego studenta
+                found = true; 
+                break; 
             } else {
-                option.style.display = 'none'; // Ukrywa opcję
+                option.style.display = 'none'; 
             }
         }
 
-        // Jeśli nie znaleziono pasującego studenta, ustaw wartość na pustą
         if (!found) {
             document.getElementById('studentSelect').value = '';
         }
     }
 
-    // Nasłuchiwacz kliknięcia przycisku wyszukiwania
+
     document.getElementById('searchButton').addEventListener('click', (e) => {
-        e.preventDefault(); // Zapobiega domyślnemu działaniu formularza
-        filterStudents(); // Wywołuje funkcję filtrującą
+        e.preventDefault(); 
+        filterStudents(); 
     });
 
 

@@ -1,14 +1,15 @@
-// public/js/add-attendance-handler.js
 
 import { loadNavbar } from '../components/Navbar.js';
 import { loadModal } from '../components/Modal.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Ładowanie navbaru i modalu
     loadNavbar();
     loadModal();
 
-    // Obsługa przycisku wylogowania
+    const attendanceDateAdd = document.getElementById('attendanceDateAdd');
+    const today = new Date().toISOString().split('T')[0];
+    attendanceDateAdd.value = today;
+
     const logoutButton = document.getElementById('logoutButton');
     if (logoutButton) {
         logoutButton.addEventListener('click', function () {
@@ -17,22 +18,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Inicjalizacja elementów formularza
-    const attendanceDateAdd = document.getElementById('attendanceDateAdd');
     const addAttendanceForm = document.getElementById('add-attendance-form');
     const attendanceRecordsDiv = document.getElementById('attendance-records');
     const addAttendanceResults = document.getElementById('add-attendance-results');
 
-    // Funkcja do pobierania parametrów z URL
     function getQueryParam(param) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(param);
     }
 
-    // Pobranie courseId z URL
     const courseId = getQueryParam('courseId');
     if (!courseId) {
-        addAttendanceResults.innerHTML = '<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>';
+        addAttendanceResults.innerHTML = `<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>`;
         addAttendanceForm.style.display = 'none';
         return;
     }
@@ -64,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Funkcja do wyświetlania listy uczniów z opcjami obecności
     function populateStudents(students) {
-        // Czyścimy istniejącą listę uczniów
         attendanceRecordsDiv.innerHTML = '';
 
         if (students.length === 0) {
@@ -72,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Tworzymy formularz z listą uczniów
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
 
@@ -83,7 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const listItem = document.createElement('div');
             listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-            // Checkbox dla obecności
             const checkboxDiv = document.createElement('div');
             checkboxDiv.className = 'form-check';
 
@@ -101,10 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
             checkboxDiv.appendChild(checkbox);
             checkboxDiv.appendChild(label);
 
-            // Select dla statusu obecności
             const statusSelect = document.createElement('select');
             statusSelect.className = 'form-select status-select w-auto';
-            statusSelect.required = false; // Opcjonalne, tylko gdy checkbox jest zaznaczony
+            statusSelect.required = false; 
 
             statusSelect.innerHTML = `
                 <option value="" disabled selected>Select status</option>
@@ -114,10 +107,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <option value="excused">Excused</option>
             `;
 
-            // Wyłączanie selecta statusu, jeśli checkbox nie jest zaznaczony
             statusSelect.disabled = true;
 
-            // Obsługa zmiany stanu checkboxa
+
             checkbox.addEventListener('change', () => {
                 if (checkbox.checked) {
                     statusSelect.disabled = false;
@@ -138,16 +130,13 @@ document.addEventListener("DOMContentLoaded", () => {
         attendanceRecordsDiv.appendChild(formGroup);
     }
 
-    // Pobranie uczniów przypisanych do kursu po załadowaniu strony
     fetchStudents(courseId);
 
-    // Obsługa formularza dodawania obecności
     addAttendanceForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const date = attendanceDateAdd.value;
 
-        // Zbieranie rekordów obecności
         const records = [];
         const listItems = attendanceRecordsDiv.querySelectorAll('.list-group-item');
 
@@ -189,10 +178,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
             if (response.ok) {
-                addAttendanceResults.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
-                // Resetowanie formularza
+                let message = `<div class="alert alert-success">${data.message}</div>`;
+
+                if (data.addedRecords.length > 0) {
+                    message += `<div class="alert alert-success">Added attendance for ${data.addedRecords.length} student(s).</div>`;
+                }
+
+                if (data.skippedRecords.length > 0) {
+                    const skippedIds = data.skippedRecords.map(record => record.studentId);
+                    message += `<div class="alert alert-warning">Attendance already exists for student ID(s): ${skippedIds.join(', ')}.</div>`;
+                }
+
+                addAttendanceResults.innerHTML = message;
                 addAttendanceForm.reset();
                 attendanceRecordsDiv.innerHTML = '';
+                attendanceDateAdd.value = today;
                 fetchStudents(courseId);
             } else {
                 addAttendanceResults.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;

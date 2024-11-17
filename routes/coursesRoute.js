@@ -120,37 +120,7 @@ export default function (db) {
         });
       });
     
-      router.post('/courses/:courseId/add-test', authMiddleware, (req, res) => {
-        const { name, date, weight } = req.body;  // Pobieranie wartości wagi z body
-        const courseId = req.params.courseId;
-        const teacherId = req.user.id;
-    
-        // Sprawdzenie, czy kurs należy do nauczyciela
-        const checkCourseQuery = `SELECT * FROM courses WHERE id = ? AND teacher_id = ?`;
-        db.query(checkCourseQuery, [courseId, teacherId], (err, results) => {
-            if (err) {
-                console.error('Error checking course:', err);
-                return res.status(500).json({ message: 'Server error' });
-            }
-            if (results.length === 0) {
-                return res.status(403).json({ message: 'Forbidden: You do not own this course.' });
-            }
-    
-            // Dodawanie testu do bazy danych
-            const insertTestQuery = `
-                INSERT INTO tests (course_id, name, date, weight)
-                VALUES (?, ?, ?, ?)
-            `;
-            db.query(insertTestQuery, [courseId, name, date, weight], (err) => {
-                if (err) {
-                    console.error('Error adding test:', err);
-                    return res.status(500).json({ message: 'Server error' });
-                }
-                res.json({ message: 'Test successfully added!' });
-            });
-        });
-    });
-    
+
 
     return router;
 }
