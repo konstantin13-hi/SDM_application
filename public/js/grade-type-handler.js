@@ -105,8 +105,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Проверяем, что дата и оценка валидны
-        if (!gradeDate || isNaN(gradeValue) || gradeValue < 1 || gradeValue > 100) {
-            displayMessage('Please enter a valid date and grade between 1 and 100.', 'danger');
+        if (!gradeDate || isNaN(gradeValue) || gradeValue < 1 || gradeValue > 5) {
+            displayMessage('Please enter a valid date and grade between 1 and 5.', 'danger');
             return;
         }
 

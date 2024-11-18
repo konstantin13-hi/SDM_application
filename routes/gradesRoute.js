@@ -67,7 +67,7 @@ export default function(db) {
             const updateGradeQuery = `UPDATE grades SET date = ?, grade = ? WHERE id = ?`;
             db.query(updateGradeQuery, [gradeDate || null, gradeNumber, gradeId], (err) => {
                 if (err) return res.status(500).json({ message: 'Ошибка сервера', error: err });
-                res.json({ message: 'Оценка успешно обновлена.' });
+                res.json({ message: 'Grade updated successfully.' });
             });
         });
     });
@@ -83,7 +83,7 @@ export default function(db) {
         const updateAssessmentQuery = `UPDATE assessment_forms SET form_type = ?, weight = ? WHERE id = ?`;
         db.query(updateAssessmentQuery, [form_type, weight, id], (err) => {
             if (err) return res.status(500).json({ message: 'Ошибка при обновлении формы.', error: err });
-            res.json({ message: 'Форма успешно обновлена.' });
+            res.json({ message: 'Grade updated successfully.' });
         });
     });
 
