@@ -1,5 +1,3 @@
-// public/js/grade-students-handler.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -17,10 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const assessmentTypesContainer = document.getElementById('assessment-types');
 
-    // Funkcja do pobierania unikalnych typów ocen dla danego kursu
-    async function fetchAssessmentTypes(courseId) {
+    // Функция для получения форм оценивания для курса
+    async function fetchAssessmentForms(courseId) {
         try {
-            const response = await fetch(`http://localhost:3000/grades/course/${courseId}/assessment-types`, {
+            const response = await fetch(`http://localhost:3000/course/${courseId}/assessment-types`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -31,47 +29,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.status === 403) {
                     throw new Error('Forbidden: You do not own this course.');
                 }
-                throw new Error('Failed to fetch assessment types.');
+                throw new Error('Failed to fetch assessment forms.');
             }
 
             const data = await response.json();
-            console.log('Assessment Types:', data.assessmentTypes);
-            populateAssessmentTypes(data.assessmentTypes);
+            console.log('Assessment Forms:', data.assessmentTypes);
+            populateAssessmentForms(data.assessmentTypes);
         } catch (error) {
-            console.error('Error fetching assessment types:', error);
+            console.error('Error fetching assessment forms:', error);
             displayMessage(`Error: ${error.message}`, 'danger');
         }
     }
 
-    // Funkcja do tworzenia kafelków z typami ocen
-    function populateAssessmentTypes(assessmentTypes) {
+    // Функция для отображения форм оценивания в интерфейсе
+    function populateAssessmentForms(assessmentForms) {
         assessmentTypesContainer.innerHTML = '';
 
-        if (assessmentTypes.length === 0) {
-            assessmentTypesContainer.innerHTML = '<p>No assessment types found for this course. Please add assessments first.</p>';
+        if (assessmentForms.length === 0) {
+            assessmentTypesContainer.innerHTML = '<p>No assessment forms found for this course. Please add assessments first.</p>';
             return;
         }
 
-        assessmentTypes.forEach(type => {
+        assessmentForms.forEach(form => {
             const col = document.createElement('div');
             col.className = 'col-md-4 mb-4';
 
             const card = document.createElement('div');
             card.className = 'card assessment-card h-100';
-            card.setAttribute('data-assessment-type', type.form_type);
+            card.setAttribute('data-assessment-form-id', form.id);
 
             card.innerHTML = `
                 <div class="card-body">
                     <div class="assessment-icon">
-                        <i class="bi bi-clipboard2-data"></i> <!-- Ikona Bootstrap Icons -->
+                        <i class="bi bi-clipboard2-data"></i>
                     </div>
-                    <h5 class="card-title">${capitalizeFirstLetter(type.form_type)}</h5>
+                    <h5 class="card-title">${capitalizeFirstLetter(form.form_type)}</h5>
+                    <p>Weight: ${form.weight}%</p>
+                    <p>Date Created: ${form.date_created}</p>
                 </div>
             `;
 
-            // Dodanie event listenera do kafelka
+            // Добавляем обработчик события для перехода к оцениванию студентов
             card.addEventListener('click', () => {
-                window.location.href = `gradeType.html?courseId=${courseId}&assessmentType=${encodeURIComponent(type.form_type)}`;
+                window.location.href = `gradeType.html?courseId=${courseId}&assessmentFormId=${form.id}`;
             });
 
             col.appendChild(card);
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Funkcja do wyświetlania komunikatów
+    // Функция для отображения сообщений об ошибках
     function displayMessage(message, type) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -91,11 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
         assessmentTypesContainer.prepend(messageDiv);
     }
 
-    // Funkcja pomocnicza do kapitalizacji pierwszej litery
+    // Функция для капитализации первой буквы
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    // Pobranie typów ocen po załadowaniu strony
-    fetchAssessmentTypes(courseId);
+    // Вызов функции загрузки форм оценивания
+    fetchAssessmentForms(courseId);
 });
