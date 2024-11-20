@@ -9,6 +9,7 @@
 ## Documents
 - [First-Time Git Clone Instructions](documentation/4.md)
 - [Project Setup Instructions](documentation/5.md)
+- ([Online](https://dbdiagram.io/d/SDM_application-673e04c9e9daa85aca225c88))
 
 ## Description
 
