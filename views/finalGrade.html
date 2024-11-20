@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Grades</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <style>
+    #grades-table-body td:last-child {
+        color: #212529 !important;
+    }
+      </style>
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<!-- Modal placeholder -->
+<div id="modal-placeholder"></div>
+
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Final Grades for Course</h1>
+    <div id="final-grades" class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Student Surname</th>
+                <th>Final Grade</th>
+            </tr>
+            </thead>
+            <tbody id="grades-table-body">
+            <!-- JavaScript will populate this table -->
+            </tbody>
+        </table>
+    </div>
+    <div id="no-students" class="alert alert-warning text-center d-none">
+        No students found for this course.
+    </div>
+</div>
+
+
+<script type="module" src="/js/main.js"></script>
+
+<script type="module" src="/js/finalGrade.js"></script>
+
+<script  src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script  src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script  src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
