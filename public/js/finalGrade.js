@@ -1,18 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
+$(document).ready(function () {
     const courseId = new URLSearchParams(window.location.search).get('courseId');
 
-    fetch(`http://localhost:3000/gr/course/${courseId}/final-grades`, {
+    $.ajax({
+        url: `http://localhost:3000/gr/course/${courseId}/final-grades`,
         method: 'GET',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-    })
-        .then(r => r.json())
-        .then(data => {
-            const gradesTableBody = document.getElementById('grades-table-body');
-            const noStudentsAlert = document.getElementById('no-students');
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        success: function (data) {
+            const $gradesTableBody = $('#grades-table-body');
+            const $noStudentsAlert = $('#no-students');
 
             if (data.students && data.students.length > 0) {
-                noStudentsAlert.classList.add('d-none');
-                data.students.forEach((student, index) => {
+                $noStudentsAlert.addClass('d-none');
+                $.each(data.students, function (index, student) {
                     // Проверка значения final_grade
                     const gradeValue = student.final_grade !== null ? parseFloat(student.final_grade) : null;
 
@@ -39,13 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             </td>
                         </tr>
                     `;
-                    gradesTableBody.innerHTML += row;
+                    $gradesTableBody.append(row);
                 });
             } else {
-                noStudentsAlert.classList.remove('d-none');
+                $noStudentsAlert.removeClass('d-none');
             }
-        })
-        .catch(error => {
+        },
+        error: function (error) {
             console.error('Error fetching final grades:', error);
-        });
+        }
+    });
 });

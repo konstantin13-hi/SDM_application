@@ -1,70 +1,67 @@
 // public/js/add-course-handler.js
 
-document.getElementById('course-form').addEventListener('submit', async function (event) {
+$('#course-form').on('submit', async function (event) {
     event.preventDefault();
 
-    const formData = new FormData(this);
+    const formData = $(this).serializeArray(); // Сериализуем данные формы
     const data = {
-        courseName: formData.get('courseName'),
-        // Uwaga: Pole 'teacher' nie jest potrzebne, ponieważ backend identyfikuje nauczyciela na podstawie tokenu.
-        // Możesz je usunąć z formularza i z kodu frontendowego.
-        // teacher: formData.get('teacher'),
-        students: Array.from(document.querySelectorAll('input[name="student"]:checked')).map(checkbox => checkbox.value),
-        startDate: formData.get('startDate'),
+        courseName: formData.find(item => item.name === 'courseName')?.value || '',
+        students: $('input[name="student"]:checked').map((_, checkbox) => $(checkbox).val()).get(),
+        startDate: formData.find(item => item.name === 'startDate')?.value || '',
     };
 
-    // Weryfikacja, że wybrano przynajmniej jednego studenta
+    // Проверяем, что выбран хотя бы один студент
     if (data.students.length === 0) {
-        document.getElementById('response-message').textContent = 'Please select at least one student.';
+        $('#response-message').text('Please select at least one student.');
         return;
     }
 
     console.log('Sending data:', data);
 
-    // Pobranie tokenu z localStorage
+    // Получаем токен из localStorage
     const token = localStorage.getItem('token');
 
     try {
-        const response = await fetch('http://localhost:3000/courses', { // Zmieniono z /api/courses na /courses
+        const response = await fetch('http://localhost:3000/courses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Dodanie tokenu do nagłówka
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(data)
         });
 
         if (response.status === 401) {
-            // Token jest nieważny lub brak - przekierowanie na stronę logowania
+            // Если токен недействителен, перенаправляем на страницу входа
             window.location.href = 'loginPage.html';
             return;
         }
 
         const result = await response.json();
-        document.getElementById('response-message').textContent = result.message;
+        $('#response-message').text(result.message);
     } catch (error) {
-        document.getElementById('response-message').textContent = 'Error: ' + error;
+        $('#response-message').text('Error: ' + error);
     }
 });
 
-// Inicjalizacja strony
-window.onload = async function() {
-    const studentContainer = document.getElementById('students');
-    const searchInput = document.getElementById('studentSearch');
-    const prevPageBtn = document.getElementById('prev-page');
-    const nextPageBtn = document.getElementById('next-page');
-    const paginationUl = document.querySelector('.pagination');
+// Инициализация страницы
+$(async function() {
+    const $studentContainer = $('#students');
+    const $searchInput = $('#studentSearch');
+    const $prevPageBtn = $('#prev-page');
+    const $nextPageBtn = $('#next-page');
+    const $paginationUl = $('.pagination');
 
     let currentPage = 1;
     const limit = 10;
     let totalPages = 1;
     let currentSearch = '';
 
-    // Funkcja do pobierania studentów z serwera
+    // Функция для получения списка студентов
     async function fetchStudents() {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3000/students?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=${limit}`, { // Zmieniono z /api/students na /students
+            const response = await fetch(`http://localhost:3000/students?search=${encodeURIComponent(currentSearch)}&page=${currentPage}&limit=${limit}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -78,60 +75,58 @@ window.onload = async function() {
             setupPagination(data.pagination);
         } catch (error) {
             console.error('Error loading students:', error);
-            document.getElementById('response-message').textContent = 'Error loading students: ' + error.message;
+            $('#response-message').text('Error loading students: ' + error.message);
         }
     }
 
-    // Funkcja do wyświetlania studentów
+    // Функция отображения списка студентов
     function renderStudents(students) {
-        studentContainer.innerHTML = ''; // Czyszczenie poprzednich wyników
+        $studentContainer.empty(); // Очищаем контейнер студентов
 
-        // Wyświetlanie każdego studenta
         students.forEach(student => {
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = 'student';
-            checkbox.value = student.id;
-            checkbox.id = `student-${student.id}`; // Unikalny ID
+            const $checkbox = $('<input>', {
+                type: 'checkbox',
+                name: 'student',
+                value: student.id,
+                id: `student-${student.id}`,
+                class: 'form-check-input'
+            });
 
-            const label = document.createElement('label');
-            label.htmlFor = `student-${student.id}`; // Powiązanie label z checkbox
-            label.textContent = `${student.name} ${student.surname}`; // Wyświetlanie imienia i nazwiska
+            const $label = $('<label>', {
+                for: `student-${student.id}`,
+                class: 'form-check-label',
+                text: `${student.name} ${student.surname}`
+            });
 
-            const div = document.createElement('div');
-            div.classList.add('form-check'); // Klasa Bootstrap dla lepszej stylizacji
-            checkbox.classList.add('form-check-input');
-            label.classList.add('form-check-label');
-
-            div.appendChild(checkbox);
-            div.appendChild(label);
-            studentContainer.appendChild(div);
+            const $div = $('<div>', { class: 'form-check' });
+            $div.append($checkbox, $label);
+            $studentContainer.append($div);
         });
     }
 
-    // Funkcja do ustawiania paginacji
+    // Функция настройки пагинации
     function setupPagination(pagination) {
         totalPages = pagination.totalPages;
         currentPage = pagination.currentPage;
 
-        // Włączanie/wyłączanie przycisków "Previous" i "Next"
-        prevPageBtn.classList.toggle('disabled', currentPage === 1);
-        nextPageBtn.classList.toggle('disabled', currentPage === totalPages);
+        // Включаем/отключаем кнопки "Previous" и "Next"
+        $prevPageBtn.toggleClass('disabled', currentPage === 1);
+        $nextPageBtn.toggleClass('disabled', currentPage === totalPages);
 
-        // Usuwanie istniejących numerów stron
-        const existingPageNumbers = document.querySelectorAll('.page-number');
-        existingPageNumbers.forEach(page => page.remove());
+        // Удаляем существующие номера страниц
+        $paginationUl.find('.page-number').remove();
 
-        // Dodawanie nowych numerów stron
+        // Добавляем новые номера страниц
         for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement('li');
-            li.classList.add('page-item', 'page-number');
-            if (i === currentPage) li.classList.add('active');
-            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            paginationUl.insertBefore(li, nextPageBtn);
+            const $li = $('<li>', {
+                class: `page-item page-number${i === currentPage ? ' active' : ''}`
+            }).append(
+                $('<a>', { href: '#', class: 'page-link', text: i })
+            );
 
-            // Obsługa kliknięcia na numer strony
-            li.addEventListener('click', function(e) {
+            $paginationUl.find('#next-page').before($li);
+
+            $li.on('click', function(e) {
                 e.preventDefault();
                 if (currentPage === i) return;
                 currentPage = i;
@@ -139,32 +134,32 @@ window.onload = async function() {
             });
         }
 
-        // Obsługa kliknięcia na przycisk "Previous"
-        prevPageBtn.onclick = function(e) {
+        // Обработка кнопки "Previous"
+        $prevPageBtn.off('click').on('click', function(e) {
             e.preventDefault();
             if (currentPage > 1) {
                 currentPage--;
                 fetchStudents();
             }
-        };
+        });
 
-        // Obsługa kliknięcia na przycisk "Next"
-        nextPageBtn.onclick = function(e) {
+        // Обработка кнопки "Next"
+        $nextPageBtn.off('click').on('click', function(e) {
             e.preventDefault();
             if (currentPage < totalPages) {
                 currentPage++;
                 fetchStudents();
             }
-        };
+        });
     }
 
-    // Obsługa wyszukiwania
-    searchInput.addEventListener('input', function() {
-        currentSearch = this.value.trim();
-        currentPage = 1; // Resetowanie na pierwszą stronę przy nowym wyszukiwaniu
+    // Обработка ввода в поле поиска
+    $searchInput.on('input', function() {
+        currentSearch = $(this).val().trim();
+        currentPage = 1; // Сбрасываем на первую страницу
         fetchStudents();
     });
 
-    // Pobranie studentów po załadowaniu strony
-    fetchStudents();
-};
+    // Загружаем студентов при загрузке страницы
+    await fetchStudents();
+});

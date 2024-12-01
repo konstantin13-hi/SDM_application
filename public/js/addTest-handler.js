@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function () {
   const token = localStorage.getItem('token');
   const urlParams = new URLSearchParams(window.location.search);
   const courseId = urlParams.get('courseId');
@@ -8,46 +8,42 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  const form = document.getElementById('add-test-form');
-  form.addEventListener('submit', function(event) {
+  const $form = $('#add-test-form');
+  $form.on('submit', function (event) {
     event.preventDefault();
 
-    const testForm = document.getElementById('testForm').value;
-    const testWeight = document.getElementById('testWeight').value;  // Pobierz wybraną wagę testu
-    const testDate = document.getElementById('testDate').value;
+    const testForm = $('#testForm').val();
+    const testWeight = $('#testWeight').val(); // Получаем значение веса теста
+    const testDate = $('#testDate').val();
 
-    fetch(`http://localhost:3000/courses/${courseId}/add-test`, {
+    $.ajax({
+      url: `http://localhost:3000/courses/${courseId}/add-test`,
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ name: testForm, weight: testWeight, date: testDate })
-    })
-    .then(async (response) => {
-      const data = await response.json();
-
-      if (response.ok) {
+      data: JSON.stringify({ name: testForm, weight: testWeight, date: testDate }),
+      success: function (data) {
         displayMessage(data.message, 'success');
-        form.reset();
-      } else {
-        displayMessage(data.message, 'danger');
+        $form[0].reset(); // Сбрасываем форму
+      },
+      error: function (xhr) {
+        const errorMessage = xhr.responseJSON?.message || 'Failed to add test.';
+        displayMessage(errorMessage, 'danger');
       }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      displayMessage('Failed to add test.', 'danger');
     });
   });
+
+  function displayMessage(message, type) {
+    const $messageDiv = $('#message-container');
+    $messageDiv.text(message)
+        .removeClass()
+        .addClass(`alert alert-${type}`)
+        .removeClass('d-none');
+
+    setTimeout(() => {
+      $messageDiv.addClass('d-none');
+    }, 3000);
+  }
 });
-
-function displayMessage(message, type) {
-  const messageDiv = document.getElementById('message-container');
-  messageDiv.textContent = message;
-  messageDiv.className = `alert alert-${type}`;
-  messageDiv.classList.remove('d-none');
-
-  setTimeout(() => {
-    messageDiv.classList.add('d-none');
-  }, 3000);
-}

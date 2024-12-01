@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+$(document).ready(function () {
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = 'login.html';
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const assessmentTypesContainer = document.getElementById('assessment-types');
+    const $assessmentTypesContainer = $('#assessment-types');
 
     // Функция для получения форм оценивания для курса
     async function fetchAssessmentForms(courseId) {
@@ -43,22 +43,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для отображения форм оценивания в интерфейсе
     function populateAssessmentForms(assessmentForms) {
-        assessmentTypesContainer.innerHTML = '';
+        $assessmentTypesContainer.empty(); // Очищаем контейнер перед добавлением новых элементов
 
         if (assessmentForms.length === 0) {
-            assessmentTypesContainer.innerHTML = '<p>No assessment forms found for this course. Please add assessments first.</p>';
+            $assessmentTypesContainer.html('<p>No assessment forms found for this course. Please add assessments first.</p>');
             return;
         }
 
-        assessmentForms.forEach(form => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-4';
+        $.each(assessmentForms, function (index, form) {
+            const $col = $('<div>').addClass('col-md-4 mb-4');
+            const $card = $('<div>').addClass('card assessment-card h-100').attr('data-assessment-form-id', form.id);
 
-            const card = document.createElement('div');
-            card.className = 'card assessment-card h-100';
-            card.setAttribute('data-assessment-form-id', form.id);
-
-            card.innerHTML = `
+            $card.html(`
                 <div class="card-body">
                     <div class="assessment-icon">
                         <i class="bi bi-clipboard2-data"></i>
@@ -67,28 +63,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p>Weight: ${form.weight}%</p>
                     <p>Date Created: ${form.date_created}</p>
                 </div>
-            `;
+            `);
 
             // Добавляем обработчик события для перехода к оцениванию студентов
-            card.addEventListener('click', () => {
+            $card.on('click', function () {
                 window.location.href = `gradeType.html?courseId=${courseId}&assessmentFormId=${form.id}`;
             });
 
-            col.appendChild(card);
-            assessmentTypesContainer.appendChild(col);
+            $col.append($card);
+            $assessmentTypesContainer.append($col);
         });
     }
 
     // Функция для отображения сообщений об ошибках
     function displayMessage(message, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        messageDiv.role = 'alert';
-        messageDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        assessmentTypesContainer.prepend(messageDiv);
+        const $messageDiv = $(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `);
+
+        $assessmentTypesContainer.prepend($messageDiv);
     }
 
     // Функция для капитализации первой буквы

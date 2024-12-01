@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+$(document).ready(function() {
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = 'login.html';
@@ -14,10 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const assessmentTitle = document.getElementById('assessment-title');
-    assessmentTitle.textContent = `Grades for Assessment Form #${assessmentFormId}`;
-
-    const gradesTableContainer = document.getElementById('grades-table-container');
+    $('#assessment-title').text(`Grades for Assessment Form #${assessmentFormId}`);
+    const gradesTableContainer = $('#grades-table-container');
 
     // Fetch students and grades
     async function fetchStudentsAndGrades() {
@@ -45,64 +43,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Create table with students and grades
     function createTable(students) {
-        const table = document.createElement('table');
-        table.className = 'table table-bordered';
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Surname</th>
-                    <th>Grade Date</th>
-                    <th>Grade</th>
-                    <th>Edit</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${students.map(student => `
+        let tableHTML = `
+            <table class="table table-bordered">
+                <thead>
                     <tr>
-                        <td>${student.student_id}</td>
-                        <td>${student.name}</td>
-                        <td>${student.surname}</td>
-                        <td>${student.date || ''}</td>
-                        <td>${student.grade !== null ? student.grade : ''}</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm edit-grade" data-student-id="${student.student_id}" data-grade-id="${student.grade_id || ''}">Edit</button>
-                        </td>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Grade Date</th>
+                        <th>Grade</th>
+                        <th>Edit</th>
                     </tr>
-                `).join('')}
-            </tbody>
+                </thead>
+                <tbody>
         `;
 
-        gradesTableContainer.innerHTML = '';
-        gradesTableContainer.appendChild(table);
+        students.forEach(student => {
+            tableHTML += `
+                <tr>
+                    <td>${student.student_id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.surname}</td>
+                    <td>${student.date || ''}</td>
+                    <td>${student.grade !== null ? student.grade : ''}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm edit-grade" data-student-id="${student.student_id}" data-grade-id="${student.grade_id || ''}">Edit</button>
+                    </td>
+                </tr>
+            `;
+        });
 
-        document.querySelectorAll('.edit-grade').forEach(button => {
-            button.addEventListener('click', () => openEditGradeModal(button));
+        tableHTML += '</tbody></table>';
+
+        gradesTableContainer.html(tableHTML);
+
+        // Attach event listeners for edit buttons
+        $('.edit-grade').on('click', function() {
+            openEditGradeModal($(this));
         });
     }
 
     // Open modal for editing grade
     function openEditGradeModal(button) {
-        const studentId = button.getAttribute('data-student-id');
-        const gradeId = button.getAttribute('data-grade-id');
+        const studentId = button.data('student-id');
+        const gradeId = button.data('grade-id');
 
-        document.getElementById('studentId').value = studentId;
-        document.getElementById('gradeId').value = gradeId;
-        document.getElementById('gradeDate').value = '';
-        document.getElementById('gradeValue').value = '';
+        $('#studentId').val(studentId);
+        $('#gradeId').val(gradeId);
+        $('#gradeDate').val('');
+        $('#gradeValue').val('');
 
-        const editModal = new bootstrap.Modal(document.getElementById('editGradeModal'));
+        const editModal = new bootstrap.Modal($('#editGradeModal')[0]);
         editModal.show();
     }
 
     // Save updated grade
-    document.getElementById('save-grade-button').addEventListener('click', async () => {
-        const gradeId = document.getElementById('gradeId').value;
-        const gradeDate = document.getElementById('gradeDate').value;
-        const gradeValue = parseFloat(document.getElementById('gradeValue').value);
-        const studentId = document.getElementById('studentId').value;
-
+    $('#save-grade-button').on('click', async function() {
+        const gradeId = $('#gradeId').val();
+        const gradeDate = $('#gradeDate').val();
+        const gradeValue = parseFloat($('#gradeValue').val());
+        const studentId = $('#studentId').val();
 
         // Проверяем, что дата и оценка валидны
         if (!gradeDate || isNaN(gradeValue) || gradeValue < 1 || gradeValue > 5) {
@@ -110,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Создаем данные для запроса
         const gradeData = {
             gradeDate,
             gradeValue,
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 displayMessage(data.message, 'success');
                 fetchStudentsAndGrades(); // Обновляем таблицу студентов и оценок
-                bootstrap.Modal.getInstance(document.getElementById('editGradeModal')).hide();
+                bootstrap.Modal.getInstance($('#editGradeModal')[0]).hide();
             } else {
                 displayMessage(data.message || 'Failed to save grade.', 'danger');
             }
@@ -158,16 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
     // Display message function
     function displayMessage(message, type) {
-        const messageContainer = document.getElementById('message-container');
-        messageContainer.className = `alert alert-${type}`;
-        messageContainer.textContent = message;
-        messageContainer.classList.remove('d-none');
+        const messageContainer = $('#message-container');
+        messageContainer.removeClass('d-none').addClass(`alert alert-${type}`).text(message);
 
-        setTimeout(() => {
-            messageContainer.classList.add('d-none');
+        setTimeout(function() {
+            messageContainer.addClass('d-none');
         }, 3000);
     }
 

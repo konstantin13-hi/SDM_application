@@ -3,38 +3,38 @@
 import { loadNavbar } from '../components/Navbar.js';
 import { loadModal } from '../components/Modal.js';
 
-document.addEventListener("DOMContentLoaded", () => {
+$(document).ready(function () {
     loadNavbar();
     loadModal();
 
-    const logoutButton = document.getElementById('logoutButton');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function () {
+    const logoutButton = $('#logoutButton');
+    if (logoutButton.length) {
+        logoutButton.on('click', function () {
             localStorage.removeItem('token');
             window.location.href = 'loginPage.html';
         });
     }
 
-    // Inicjalizacja elementów formularza
-    const attendanceDatesList = document.getElementById('attendanceDatesList');
-    const attendanceRecordsDiv = document.getElementById('attendance-records');
-    const viewAttendanceResults = document.getElementById('view-attendance-results');
+    // Initialize form elements
+    const attendanceDatesList = $('#attendanceDatesList');
+    const attendanceRecordsDiv = $('#attendance-records');
+    const viewAttendanceResults = $('#view-attendance-results');
 
-    // Funkcja do pobierania parametrów z URL
+    // Function to get query parameters from the URL
     function getQueryParam(param) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(param);
     }
 
-    // Pobranie courseId z URL
+    // Get courseId from URL
     const courseId = getQueryParam('courseId');
-    console.log('Course ID:', courseId); 
+    console.log('Course ID:', courseId);
     if (!courseId) {
-        viewAttendanceResults.innerHTML = `<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>`;
+        viewAttendanceResults.html('<div class="alert alert-danger">No course selected. Please select a course from <a href="coursesPage.html">My Courses</a>.</div>');
         return;
     }
 
-    // Funkcja do pobierania dostępnych dat dla kursu
+    // Fetch available dates for the course
     async function fetchAvailableDates(courseId) {
         try {
             const token = localStorage.getItem('token');
@@ -51,55 +51,50 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error('Failed to fetch available dates');
             }
             const data = await response.json();
-            console.log('Available Dates:', data.dates); 
+            console.log('Available Dates:', data.dates);
             populateDateList(data.dates);
         } catch (error) {
             console.error('Error loading available dates:', error);
-            viewAttendanceResults.innerHTML = `<div class="alert alert-danger">Error loading available dates: ${error.message}</div>`;
+            viewAttendanceResults.html(`<div class="alert alert-danger">Error loading available dates: ${error.message}</div>`);
         }
     }
 
-    // Funkcja do wyświetlania listy dat jako przyciski
+    // Display available dates as buttons
     function populateDateList(dates) {
-        attendanceDatesList.innerHTML = '';
+        attendanceDatesList.empty();
 
         if (dates.length === 0) {
-            attendanceDatesList.innerHTML = '<p>No attendance records found for this course.</p>';
+            attendanceDatesList.html('<p>No attendance records found for this course.</p>');
             return;
         }
 
-
         dates.forEach(date => {
-            const listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
+            const listItem = $('<li>').addClass('list-group-item');
+            const button = $('<button>').addClass('btn btn-link')
+                .attr('type', 'button')
+                .data('date', date)
+                .text(formatDate(date));
 
-            const button = document.createElement('button');
-            button.className = 'btn btn-link';
-            button.type = 'button'; 
-            button.setAttribute('data-date', date);
-            const formattedDate = formatDate(date);
-            button.textContent = formattedDate;
-
-            button.addEventListener('click', () => {
-                const dateToSend = button.getAttribute('data-date'); 
-                console.log('Fetching attendance for courseId:', courseId, 'date:', dateToSend); 
+            button.on('click', () => {
+                const dateToSend = button.data('date');
+                console.log('Fetching attendance for courseId:', courseId, 'date:', dateToSend);
                 fetchAttendance(courseId, dateToSend);
             });
 
-            listItem.appendChild(button);
-            attendanceDatesList.appendChild(listItem);
+            listItem.append(button);
+            attendanceDatesList.append(listItem);
         });
     }
 
-    // Funkcja do formatowania daty na bardziej czytelną formę bez przekształcania na obiekt Date
+    // Format date to a more readable form
     function formatDate(dateString) {
         const [year, month, day] = dateString.split('-');
-        const date = new Date(Date.UTC(year, month - 1, day)); 
+        const date = new Date(Date.UTC(year, month - 1, day));
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return date.toLocaleDateString(undefined, options);
     }
 
-    // Funkcja do pobierania obecności dla kursu i daty
+    // Fetch attendance for the course and date
     async function fetchAttendance(courseId, date) {
         try {
             const token = localStorage.getItem('token');
@@ -121,28 +116,24 @@ document.addEventListener("DOMContentLoaded", () => {
             displayAttendance(data.attendance, date);
         } catch (error) {
             console.error('Error loading attendance:', error);
-            viewAttendanceResults.innerHTML = `<div class="alert alert-danger">Error loading attendance: ${error.message}</div>`;
+            viewAttendanceResults.html(`<div class="alert alert-danger">Error loading attendance: ${error.message}</div>`);
         }
     }
 
-    // Funkcja do wyświetlania obecności
+    // Display attendance records
     function displayAttendance(attendance, date) {
-        attendanceRecordsDiv.innerHTML = '';
+        attendanceRecordsDiv.empty();
 
         if (attendance.length === 0) {
-            attendanceRecordsDiv.innerHTML = '<p>No attendance records found for this date.</p>';
+            attendanceRecordsDiv.html('<p>No attendance records found for this date.</p>');
             return;
         }
 
-        const header = document.createElement('h3');
-        header.textContent = `Attendance for ${formatDate(date)}`;
-        attendanceRecordsDiv.appendChild(header);
+        const header = $('<h3>').text(`Attendance for ${formatDate(date)}`);
+        attendanceRecordsDiv.append(header);
 
-        const table = document.createElement('table');
-        table.className = 'table table-bordered';
-
-        const thead = document.createElement('thead');
-        thead.innerHTML = `
+        const table = $('<table>').addClass('table table-bordered');
+        const thead = $('<thead>').html(`
             <tr>
                 <th>Student ID</th>
                 <th>Name</th>
@@ -150,65 +141,59 @@ document.addEventListener("DOMContentLoaded", () => {
                 <th>Status</th>
                 <th>Edit</th>
             </tr>
-        `;
-        table.appendChild(thead);
+        `);
+        table.append(thead);
 
-        const tbody = document.createElement('tbody');
-
+        const tbody = $('<tbody>');
         attendance.forEach(record => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
+            const tr = $('<tr>').html(`
                 <td>${record.student_id}</td>
                 <td>${record.name}</td>
                 <td>${record.surname}</td>
                 <td>${capitalizeFirstLetter(record.status)}</td>
                 <td><button type="button" class="btn btn-sm btn-primary edit-button" data-student-id="${record.student_id}" data-status="${record.status}">Edit</button></td>
-            `;
-            tbody.appendChild(tr);
+            `);
+            tbody.append(tr);
         });
 
-        table.appendChild(tbody);
-        attendanceRecordsDiv.appendChild(table);
+        table.append(tbody);
+        attendanceRecordsDiv.append(table);
 
-        // Dodanie obsługi przycisków "Edit"
-        const editButtons = document.querySelectorAll('.edit-button');
-        editButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const studentId = button.getAttribute('data-student-id');
-                const currentStatus = button.getAttribute('data-status');
-                openEditModal(studentId, currentStatus, date, courseId);
-            });
+        // Add event listeners for "Edit" buttons
+        $('.edit-button').on('click', function () {
+            const studentId = $(this).data('student-id');
+            const currentStatus = $(this).data('status');
+            openEditModal(studentId, currentStatus, date, courseId);
         });
     }
-
 
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    // Funkcja do otwierania modalu edycji
+    // Open the edit modal
     function openEditModal(studentId, currentStatus, date, courseId) {
         console.log('Opening edit modal with:', { studentId, currentStatus, date, courseId });
 
-        document.getElementById('studentId').value = studentId;
-        document.getElementById('status').value = currentStatus;
-        document.getElementById('courseId').value = courseId;
-        document.getElementById('date').value = date;
+        $('#studentId').val(studentId);
+        $('#status').val(currentStatus);
+        $('#courseId').val(courseId);
+        $('#date').val(date);
 
-        const editAttendanceModal = new bootstrap.Modal(document.getElementById('editAttendanceModal'), {
+        const editAttendanceModal = new bootstrap.Modal($('#editAttendanceModal')[0], {
             keyboard: false
         });
         editAttendanceModal.show();
     }
 
-    // Obsługa przycisku "Save Changes" w modalu
-    const saveEditButton = document.getElementById('save-edit-button');
-    if (saveEditButton) {
-        saveEditButton.addEventListener('click', async () => {
-            const courseId = document.getElementById('courseId').value;
-            const date = document.getElementById('date').value;
-            const studentId = document.getElementById('studentId').value;
-            const newStatus = document.getElementById('status').value;
+    // Handle "Save Changes" button in the modal
+    const saveEditButton = $('#save-edit-button');
+    if (saveEditButton.length) {
+        saveEditButton.on('click', async function () {
+            const courseId = $('#courseId').val();
+            const date = $('#date').val();
+            const studentId = $('#studentId').val();
+            const newStatus = $('#status').val();
 
             const updatedData = {
                 courseId: courseId,
@@ -225,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const token = localStorage.getItem('token');
                 console.log('Sending update request:', updatedData);
-                const response = await fetch(`http://localhost:3000/attendance/update`, {
+                const response = await fetch('http://localhost:3000/attendance/update', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -245,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const result = await response.json();
                 console.log('Update Result:', result);
 
-                const editAttendanceModalInstance = bootstrap.Modal.getInstance(document.getElementById('editAttendanceModal'));
+                const editAttendanceModalInstance = bootstrap.Modal.getInstance($('#editAttendanceModal')[0]);
                 editAttendanceModalInstance.hide();
 
                 alert(result.message);

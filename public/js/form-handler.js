@@ -1,11 +1,11 @@
-document.getElementById('user-form').addEventListener('submit', async function(event) {
+$('#user-form').on('submit', async function(event) {
     event.preventDefault(); // Предотвращаем перезагрузку страницы
 
-    const formData = new FormData(this);
-    const data = {
-        name: formData.get('name'),
-        email: formData.get('email')
-    };
+    const formData = $(this).serializeArray(); // Сериализуем данные формы
+    const data = {};
+    formData.forEach(item => {
+        data[item.name] = item.value;
+    });
 
     try {
         const response = await fetch('http://localhost:3000/add-teacher', {
@@ -17,9 +17,9 @@ document.getElementById('user-form').addEventListener('submit', async function(e
         });
 
         const result = await response.json();
-        document.getElementById('response-message').textContent = result.message;
+        $('#response-message').text(result.message);
 
     } catch (error) {
-        document.getElementById('response-message').textContent = 'Error: ' + error;
+        $('#response-message').text('Error: ' + error);
     }
 });

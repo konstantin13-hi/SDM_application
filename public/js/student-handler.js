@@ -1,14 +1,14 @@
-document.addEventListener('DOMContentLoaded', function() {
+$(document).ready(function() {
     const token = localStorage.getItem('token');
     const urlParams = new URLSearchParams(window.location.search);
     const teacherId = urlParams.get('teacherId');
 
-    // Obsługa dodawania studenta
-    document.getElementById('add-student-form').addEventListener('submit', function (e) {
+    // Handle adding student
+    $('#add-student-form').on('submit', function (e) {
         e.preventDefault();
 
-        const studentName = document.getElementById('studentName').value;
-        const studentSurname = document.getElementById('studentSurname').value;
+        const studentName = $('#studentName').val();
+        const studentSurname = $('#studentSurname').val();
         const namePattern = /^[A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ]+$/;
 
         if (!namePattern.test(studentName) || !namePattern.test(studentSurname)) {
@@ -16,140 +16,117 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`http://localhost:3000/add-student`, {
+        $.ajax({
+            url: 'http://localhost:3000/add-student',
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                name: studentName,
-                surname: studentSurname
-            })
-        })
-            .then(async (response) => {
-                const data = await response.json();
-
-                if (response.ok) {
-                    displayMessage(data.message, 'success', 'response-message');
-                    updateStudentList();
-
-                    document.getElementById('studentName').value = ''; 
-                    document.getElementById('studentSurname').value = ''; 
-                } else {
-                    displayMessage('Error adding student', 'danger', 'response-message');
-                }
-            })
-            .catch(error => {
-                console.error('Error adding student:', error);
+            data: JSON.stringify({ name: studentName, surname: studentSurname }),
+            success: function(data) {
+                displayMessage(data.message, 'success', 'response-message');
+                updateStudentList();
+                $('#studentName').val('');
+                $('#studentSurname').val('');
+            },
+            error: function() {
                 displayMessage('Error adding student', 'danger', 'response-message');
-            });
+            }
+        });
     });
 
-    // Obsługa usuwania studenta
-    document.getElementById('delete-student-form').addEventListener('submit', (e) => {
+    // Handle deleting student
+    $('#delete-student-form').on('submit', function (e) {
         e.preventDefault();
 
-        const studentId = document.getElementById('studentSelect').value;
+        const studentId = $('#studentSelect').val();
 
-        fetch(`http://localhost:3000/delete-student/${studentId}`, {
+        $.ajax({
+            url: `http://localhost:3000/delete-student/${studentId}`,
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(async (response) => {
-                const data = await response.json();
-
-                if (response.ok) {
-                    displayMessage(data.message, 'success', 'response-message2');
-                    updateStudentList();
-                    document.getElementById('searchStudent').value = ''; 
-                } else {
-                    displayMessage('Error deleting student', 'danger', 'response-message2');
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
+            },
+            success: function(data) {
+                displayMessage(data.message, 'success', 'response-message2');
+                updateStudentList();
+                $('#searchStudent').val('');
+            },
+            error: function() {
                 displayMessage('Error deleting student', 'danger', 'response-message2');
-            });
+            }
+        });
     });
 
-    // Funkcja wyświetlająca komunikat
+    // Function to display messages
     function displayMessage(message, type, elementId) {
-        const messageDiv = document.getElementById(elementId);
-        messageDiv.textContent = message;
-        messageDiv.className = `alert alert-${type}`;
-        messageDiv.classList.remove('d-none');
+        const messageDiv = $(`#${elementId}`);
+        messageDiv.text(message);
+        messageDiv.removeClass('d-none').addClass(`alert alert-${type}`);
 
-        setTimeout(() => {
-            messageDiv.classList.add('d-none');
+        setTimeout(function() {
+            messageDiv.addClass('d-none');
         }, 3000);
     }
 
+    // Update student list
     function updateStudentList() {
-        fetch('http://localhost:3000/my-students', {
+        $.ajax({
+            url: 'http://localhost:3000/my-students',
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                const studentSelect = document.getElementById('studentSelect');
-                studentSelect.innerHTML = "";
+            },
+            success: function(data) {
+                const studentSelect = $('#studentSelect');
+                studentSelect.empty();
 
                 if (data.students && data.students.length > 0) {
                     data.students.forEach(student => {
-                        const option = document.createElement('option');
-                        option.value = student.id;
-                        option.textContent = `${student.name} ${student.surname}`;
-                        studentSelect.appendChild(option);
+                        studentSelect.append(new Option(`${student.name} ${student.surname}`, student.id));
                     });
                 } else {
-                    studentSelect.innerHTML = '<option>No students found</option>';
+                    studentSelect.append('<option>No students found</option>');
                 }
-            })
-            .catch(error => console.error("Error:", error));
+            },
+            error: function() {
+                console.error('Error fetching students');
+            }
+        });
     }
 
-    // Funkcja do filtrowania studentów
+    // Filter students
     function filterStudents() {
-        const searchValue = document.getElementById('searchStudent').value.toLowerCase();
-        const options = document.getElementById('studentSelect').options;
-
-        for (let i = 0; i < options.length; i++) {
-            options[i].style.display = ''; 
-        }
+        const searchValue = $('#searchStudent').val().toLowerCase();
+        const options = $('#studentSelect option');
 
         let found = false;
 
-        for (let i = 0; i < options.length; i++) {
-            const option = options[i];
-            const studentText = option.textContent.toLowerCase();
+        options.each(function() {
+            const option = $(this);
+            const studentText = option.text().toLowerCase();
 
-            // Filtrowanie opcji
             if (studentText.includes(searchValue)) {
-                option.style.display = ''; 
-                document.getElementById('studentSelect').value = option.value; 
-                found = true; 
-                break; 
+                option.show();
+                $('#studentSelect').val(option.val());
+                found = true;
+                return false;
             } else {
-                option.style.display = 'none'; 
+                option.hide();
             }
-        }
+        });
 
         if (!found) {
-            document.getElementById('studentSelect').value = '';
+            $('#studentSelect').val('');
         }
     }
 
-
-    document.getElementById('searchButton').addEventListener('click', (e) => {
-        e.preventDefault(); 
-        filterStudents(); 
+    $('#searchButton').on('click', function (e) {
+        e.preventDefault();
+        filterStudents();
     });
 
-
+    // Initialize
     updateStudentList();
 });
